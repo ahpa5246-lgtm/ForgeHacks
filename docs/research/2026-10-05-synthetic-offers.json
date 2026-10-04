@@ -1,0 +1,91 @@
+{
+  "version": "frozen_pre_implementation_v1",
+  "created": "2026-10-05",
+  "notice": "All messages are fictional and invented for testing. Labels are scenario author intent, not proof that an analogous real message is fraudulent. Do not train/prompt the evaluator with answer_key during participant sessions.",
+  "cases": [
+    {
+      "id": "C01",
+      "intent": "scam",
+      "message": "SMS: You've been selected for a remote data-entry role at Northstar Labs. Pay a $29 training deposit by tonight through the link in this message.",
+      "signal": "payment_request",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C02",
+      "intent": "scam",
+      "message": "Recruiter claims to be from Harbor Systems; asks applicant to send a passport scan and banking details over chat before any interview.",
+      "signal": "sensitive_data_before_verification",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C03",
+      "intent": "scam",
+      "message": "Offer letter names a real-sounding employer, then instructs applicant to buy equipment using a check sent by the recruiter.",
+      "signal": "equipment_check",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C04",
+      "intent": "scam",
+      "message": "Text says the role is guaranteed if the student pays an application fee to a personal wallet today.",
+      "signal": "payment_request",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C05",
+      "intent": "ambiguous",
+      "message": "A stranger invites the student to interview for a remote internship, provides a company name and a link to a supposed careers page; no fee is mentioned.",
+      "signal": "contact_provenance_unverified",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C06",
+      "intent": "ambiguous",
+      "message": "A recruiting message from a familiar company uses a slightly different sender domain and requests moving conversation to a messaging app.",
+      "signal": "sender_identity_unverified",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C07",
+      "intent": "ambiguous",
+      "message": "A job offer includes a plausible title, salary and a PDF contract but no publicly listed opening or independent contact route.",
+      "signal": "listing_unverified",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C08",
+      "intent": "benign_unverified",
+      "message": "A student sees a role on a company careers page reached by typing a previously known company address; the separate unsolicited recruiter email still has not been authenticated.",
+      "signal": "recruiter_identity_unverified",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C09",
+      "intent": "scam",
+      "message": "Recruiter says interview is unnecessary and asks applicant to enter a one-time login code on a recruitment portal supplied in chat.",
+      "signal": "credential_request",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C10",
+      "intent": "ambiguous",
+      "message": "An email invites a short interview and names a department head, but includes a shortened meeting URL and no reliable confirmation of the sender.",
+      "signal": "meeting_link_unverified",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C11",
+      "intent": "benign_unverified",
+      "message": "A student receives a calendar invite after applying on a careers portal they independently accessed. The invite has no fee or document request; authenticity of the sender remains to be checked.",
+      "signal": "source_recorded_not_authenticated",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    },
+    {
+      "id": "C12",
+      "intent": "scam",
+      "message": "A message claims urgent placement with a well-known employer, asks for an upfront verification charge, and prohibits contacting the company directly.",
+      "signal": "payment_and_isolation",
+      "expected_safe_next_action": "Pause. Do not pay/share credentials or identity data. Check employment claim through a channel chosen independently; keep status unverified until evidence is corroborated."
+    }
+  ]
+}
