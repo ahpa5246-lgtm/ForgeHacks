@@ -1,0 +1,68 @@
+{
+  "role": "research_critic",
+  "data": {
+    "verdict": "revise",
+    "summary": "The draft sensibly drops the previously misaligned ActionProof candidate and pivots toward the AI+Cybersecurity prompt. I1 (OfferProof) is a reasonable small-scope starting point, but it is currently unvalidated: novelty over FTC guidance and ordinary search is asserted rather than shown, and the risk of 'LLM wrapper around advice' is not resolved. I2 has clear overlap with existing entries and should be deprioritized until a measured learning-transfer advantage is evidenced. I3 is scoped to the Education track but still lacks evidence that it beats existing education projects or that the evaluation design is sound. A go decision should require: (1) a short baseline comparison demonstrating OfferProof produces fewer unsafe next-actions than a static FTC list on blinded synthetic cases; (2) a concrete, honest demo plan (e.g., three text scenarios, deterministic extraction, clear 'unverified' states); and (3) explicit handling of the live-model/cost limits with a fallback. No winning odds are claimed, which is correct.",
+    "issues": [
+      {
+        "severity": "high",
+        "claim": "I1 (OfferProof) offers 'meaningful AI use' and differentiation beyond a labeled LLM wrapper",
+        "evidence": "The draft itself flags this risk ('A judge may see only an LLM wrapper around FTC advice') but provides no baseline or measurement to distinguish value-add from advice. Sources S4 and S5 already supply the core advice; no user test or A/B comparison is documented.",
+        "fix": "Define and run a small internal evaluation: create 10–20 synthetic and/or extracted public-FTC-style messages, assign a safety rubric (e.g., primary unsafe action prevented?), and compare OfferProof-guided next steps vs static FTC checklist for users (even the builder or 2–3 peers) in a time-boxed session. Document the rubric, inputs, and results in the README and video so judges see the basis for any 'prevention' or 'verification' claim."
+      },
+      {
+        "severity": "high",
+        "claim": "I1 can 'deliver a real next action' without misleading the user about what was actually verified",
+        "evidence": "Relying on any contact path the user finds (or the LLM retrieves) risks anchoring on potentially fabricated domains. The original sources (S4, S5) stop at 'verify with the company independently'; they do not guarantee any specific method is safe. No constraint in the draft forces a user-supplied, non-LLM-derived path or explicitly labels the result as 'not verified'.",
+        "fix": "Design a strict boundary: (1) The tool can enumerate claims in the offer, (2) list the fields a reliable, user-supplied company site or app would contain, and (3) mark 'unverified' unless the user confirms they are viewing a site the tool was not instructed to trust (or they see a known red flag). Bake the disclaimer into the demo and video."
+      },
+      {
+        "severity": "medium",
+        "claim": "The user is 'allowed' to verify independently and the tool actually helps them do so in a measurable way",
+        "evidence": "The draft has 'No user interviews or independent usability evidence yet' listed under unknowns; no test plan exists. Without at least a usability script and a couple of test sessions, claims about help or prevention are weak.",
+        "fix": "Write a 5-minute usability script and run it on 2–3 peers (even remotely) before the demo to capture whether the UI and flow actually clarify next steps. Include one short quote or metric in the README and describe the test in the video if it supports the claim."
+      },
+      {
+        "severity": "medium",
+        "claim": "The scope is achievable in 6 days, $0, and onetime with a single person",
+        "evidence": "The constraints are tight; I1 introduces a multi-step interaction, evidence logging, and text processing. The draft does not present a day-by-day plan or the minimal viable component to demo. Time risk is real.",
+        "fix": "Break I1 into: Day 1–2 data model + extraction, Day 3 checklist UI + static list generator, Day 4 evidence log + demo hookups, Day 5 polish + video script, Day 6 test + final touches. Define a fallback: if the LLM call becomes unstable, use a static extract + regex + form."
+      },
+      {
+        "severity": "medium",
+        "claim": "I2 is a reasonable candidate when 'more inventive' matters for Cybersecurity",
+        "evidence": "The draft cites S6, S7, and S8 as evidence of very similar, existing projects, then still lists I2 as a candidate and places it lower in the ranking. It does not state the minimal metric that would justify additional investment over I1.",
+        "fix": "Set an explicit decision rule: defer I2 unless a measurable learning-transfer metric exists (e.g., quiz score improvement on real phishing prompts vs static) and at least one differentiator is proven. If not, formally downgrade I2 from a candidate to a 'not this event' option."
+      },
+      {
+        "severity": "medium",
+        "claim": "I3 is on track for 'reasonable go' under the Education track without risking a weaker fit",
+        "evidence": "The draft marks I3 as 'hypothesis' for novelty and does not provide any comparable evidence of pre-existing 'Tutor Autopsy' style projects or measured learning-transfer. You cannot rank it above I1 without a comparison basis.",
+        "fix": "Run a 30-minute scan of recent Devpost Education entries or course-platform build showcases; document 2–3 close comparators. If none are clearly superior, I3 can stay in the running; if strong comparators exist, rank it below I1 without committing to I3 unless you have a quick A/B on retention or correct-answer rate on the misconceptions."
+      },
+      {
+        "severity": "low",
+        "claim": "The draft's honesty about limitations (no prior ForgeHacks winners, unknown competing entries, no live AI results) protects against overclaiming",
+        "evidence": "The draft does this clearly (verdict 'clarify_then_go', unknowns listed). However, to be fully useful for a go/no-go decision, the next milestone should be tied to specific outputs (baseline result, usability record, scope plan) rather than 'address objections'.",
+        "fix": "Change 'this product should not pass go until objections are addressed' to 'pass gate: baseline ≥ X per rubric, 2 usability sessions complete, scope plan signed', so the decision is checkable."
+      }
+    ],
+    "questions": [
+      "For I1: do you have a measurable baseline (e.g., 10–20 blinded synthetic job-offer messages scored by a human or rule for unsafe vs safe 'next action') to prove OfferProof beats FTC text alone?",
+      "For I1: how will you prevent the app from encouraging reliance on a contact path that itself could be fabricated by an LLM? What deterministic guardrails (e.g., only allow user-supplied company sites, or explicitly label 'this path may be attacker-controlled') are included?",
+      "For I1: what is the minimum live-AI component (e.g., one structured-extraction call per offer) versus a fully deterministic pipeline, given the USD 0 constraint and 6 days?",
+      "For I3: are there recent, comparable Education-track projects that you have reviewed, and what specific data point would justify choosing I3 over I1 if both meet go criteria?",
+      "For all: what is the evidence plan for the 2–4 minute demo video (what exact interaction will it show, and what explicit disclaimers will it include regarding 'unverified' statuses and no guarantee of safety)?",
+      "For I2: what specific, quantifiable indicator would make ScamRehearsal competitive against the listed prior Devpost entries, and is it worth the 6-day window?"
+    ]
+  },
+  "identity": "https://api.groq.com/openai/v1|qwen/qwen3.8-27b",
+  "usage": {
+    "input_tokens": 2174,
+    "output_tokens": 1785
+  },
+  "input_hash": "bf02c23ed3cb992472a9cb8d4916492c65d9dfad1a90d06ebbed185e9d495328",
+  "output_hash": "389ce7df6e9432c4823393f3488935df8d6d51e7f1e4f10e3abb4f20e7162410",
+  "received_at": "2026-10-05 Asia/Baghdad",
+  "note": "External Groq/Qwen critic review of research draft. A blocked verdict means revise, not a provider failure. Findings are hypotheses requiring independent validation."
+}
