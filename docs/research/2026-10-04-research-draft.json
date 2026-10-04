@@ -1,0 +1,128 @@
+{
+  "stage": "researcher",
+  "status": "draft_for_external_critic",
+  "verified_at": "2026-10-04",
+  "decision": "clarify_then_go",
+  "summary": "The published AI+Cybersecurity prompt concerns scams, impersonation and fraud. The old ActionProof refund-policy idea does not directly address it. A job-offer verification workflow may fit, but novelty and AI benefit must be disproved or measured before committing. This is research, not a build or prize prediction.",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "ForgeHacks released track prompts",
+      "url": "https://forgehacks.vercel.app/",
+      "supports": "Cybersecurity asks for an AI-powered solution that helps people recognize, prevent, verify, or respond to scams, impersonation and fraud; Education and other tracks also published."
+    },
+    {
+      "id": "S2",
+      "title": "ForgeHacks Devpost overview",
+      "url": "https://forgehacks-2026.devpost.com/",
+      "supports": "Working AI project, prompt fit, 2–4 minute public video, source and README, five judging criteria, deadline October 10 at 12:00 EDT."
+    },
+    {
+      "id": "S3",
+      "title": "ForgeHacks rules",
+      "url": "https://forgehacks-2026.devpost.com/rules",
+      "supports": "Student eligibility, 1–4 team, AI coding allowed, substantial creation during hackathon; rules page says EST whereas current Devpost overview says EDT."
+    },
+    {
+      "id": "S4",
+      "title": "FTC job scam advice",
+      "url": "https://consumer.ftc.gov/consumer-alerts/2023/01/looking-job-scammers-might-be-looking-you",
+      "supports": "Verify opening with independently known company contact; warning signs are not a sure-fire detector."
+    },
+    {
+      "id": "S5",
+      "title": "FTC 2026 fake offer text",
+      "url": "https://consumer.ftc.gov/consumer-alerts/2026/04/job-offer-text-probably-scam",
+      "supports": "Examples of unsolicited job texts and paying to get a job."
+    },
+    {
+      "id": "S6",
+      "title": "ScamShield Arena",
+      "url": "https://devpost.com/software/scamshield-arena",
+      "supports": "A multilingual AI-generated scam simulation with fake-job scenario already exists; no claim of award is made here."
+    },
+    {
+      "id": "S7",
+      "title": "ScamStage",
+      "url": "https://devpost.com/software/scamstage",
+      "supports": "Interactive scam training with deterministic scenario engine already exists."
+    },
+    {
+      "id": "S8",
+      "title": "FoolProof",
+      "url": "https://devpost.com/software/foolproof-8w93e5",
+      "supports": "An AI scam rehearsal game already includes a fake internship and other scenarios."
+    }
+  ],
+  "ideas": [
+    {
+      "id": "I1",
+      "title": "OfferProof: verify a suspicious job offer",
+      "problem": "Students receiving plausible recruiter messages need a safe next action before sharing data or paying.",
+      "audience": "Students and first-time job seekers",
+      "differentiation": "Generate a claim-by-claim verification checklist and an independent contact path; the system must explicitly say when legitimacy is unverified. Compare decisions to a fixed warning-list baseline.",
+      "evidence_ids": [
+        "S1",
+        "S4",
+        "S5",
+        "S6",
+        "S8"
+      ],
+      "novelty": "hypothesis",
+      "winning_evidence": "",
+      "scope": "Text-only, three synthetic employer/job scenarios, guided verification and evidence log; no automated declaration that a real company is safe.",
+      "weakest_assumption": "A judge may see only an LLM wrapper around FTC advice. Test whether the interaction produces fewer unsafe actions than a static warning list on blinded cases."
+    },
+    {
+      "id": "I2",
+      "title": "ScamRehearsal: interactive fake recruiter",
+      "problem": "Students may know warning signs yet fail under pressure.",
+      "audience": "Student job seekers",
+      "differentiation": "Adaptive decisions with a deterministic answer key and replay; however very close to multiple existing projects.",
+      "evidence_ids": [
+        "S1",
+        "S6",
+        "S7",
+        "S8"
+      ],
+      "novelty": "unknown",
+      "winning_evidence": "",
+      "scope": "Two safe fictional scenarios, no actual victim outreach.",
+      "weakest_assumption": "Clear overlap with prior Devpost entries; would need unusually strong measured learning transfer to justify."
+    },
+    {
+      "id": "I3",
+      "title": "Tutor Autopsy: diagnose persuasive wrong answers",
+      "problem": "Learners memorize answers without understanding why a plausible explanation fails.",
+      "audience": "Students learning programming",
+      "differentiation": "Executable counterexamples and concept links, with AI explanation evaluated against a deterministic test oracle; fits Education prompt rather than Cybersecurity.",
+      "evidence_ids": [
+        "S1",
+        "S2"
+      ],
+      "novelty": "hypothesis",
+      "winning_evidence": "",
+      "scope": "Three bounded misconceptions and one working learning loop.",
+      "weakest_assumption": "Need evidence of better concept transfer, and prior similar education projects should be checked before ranking it higher."
+    }
+  ],
+  "preliminary_ranking": [
+    "I1",
+    "I3",
+    "I2"
+  ],
+  "rejected_previous_candidate": "ActionProof is technically interesting but fails direct alignment with the released AI+Cybersecurity prompt; do not build it for that track.",
+  "critic_questions": [
+    "Does OfferProof add measurable value over FTC text and ordinary search?",
+    "Can a user genuinely verify independently without trusting a contact URL supplied by the suspect message or a hallucinated LLM?",
+    "Does a text-only demo make AI essential, or would deterministic extraction and a form be enough?",
+    "Which track has the strongest complete demo under one-person, zero-dollar constraints?",
+    "What observed prior winners, if any, are relevant? This draft has no ForgeHacks past winners because the event is a first edition."
+  ],
+  "unknowns": [
+    "No user interviews or independent usability evidence yet.",
+    "Current competing ForgeHacks entries are unknown.",
+    "No live AI model, cost, or evaluation results have been produced.",
+    "The final product direction should not pass go until the critic's objections and a baseline test are addressed."
+  ]
+}
