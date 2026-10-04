@@ -1,0 +1,74 @@
+{
+  "stage": "researcher_revision",
+  "status": "blocked_pending_evidence",
+  "date": "2026-10-05",
+  "based_on": [
+    "docs/research/2026-10-04-research-draft.json",
+    "docs/research/2026-10-05-research-critic.json"
+  ],
+  "external_critic": {
+    "identity": "Groq qwen/qwen3.8-27b",
+    "verdict": "revise",
+    "high_issues": 2,
+    "medium_issues": 4,
+    "low_issues": 1
+  },
+  "decision": "Keep OfferProof as the leading hypothesis, not an approved product. Reject ActionProof for prompt mismatch. Defer ScamRehearsal for this event due to known prior overlap. Retain Tutor Autopsy as an unranked Education alternative until comparable projects and learning evidence are checked.",
+  "revisions": {
+    "purpose": "Help a student stop before acting on a questionable text offer, separate the message's claims from independently observed evidence, and explicitly report what remains unverified.",
+    "ai_boundary": "One live AI call may extract named employer, role, recruiter identity, payment request, urgency and claimed contact details into a schema. All extracted claims remain untrusted; no AI-generated legitimacy verdict, independent URL or company phone is presented as verified.",
+    "independent_verification": "The app asks the user to navigate from a source they chose independently of the suspicious message and of AI output. A user-entered URL or confirmation alone is not evidence of authenticity; the app records source provenance and unresolved status, and explains how to cross-check against independently known channels. Even matching a job listing does not automatically establish that a particular recruiter message is genuine.",
+    "output_states": [
+      "unverified",
+      "red_flag_observed",
+      "evidence_recorded_no_authenticity_guarantee"
+    ],
+    "demo": "Three fictional text-only cases: ordinary unsolicited text; employer impersonation with convincing lookalike contact; ambiguous legitimate-looking message. Show extraction, an unsafe action intercepted, provenance labels, and an explicit unverified outcome. Never claim to have identified a real employer or prevented actual fraud.",
+    "fallback": "If the live free-model call is unavailable, a disclosed deterministic extractor and manual claim-entry form keep the guided verification flow usable. The fallback does not count as the meaningful AI component for judging."
+  },
+  "go_gates": [
+    {
+      "id": "G1",
+      "name": "Benchmark",
+      "test": "Freeze 12 fictional offers and an answer key before comparing. Evaluate static FTC checklist versus OfferProof with a blinded participant order and the same time limit. Record unsafe next-action rate, false reassurance rate, and time to a safe verification step.",
+      "threshold": "Zero false 'verified' labels; no greater unsafe-action rate than baseline and at least one observed improvement with uncertainty reported.",
+      "state": "not_run"
+    },
+    {
+      "id": "G2",
+      "name": "Usability",
+      "test": "Run a five-minute script with at least two people other than builder, using an ambiguous message. Ask their next action without leading questions and whether they mistook the result for a safety guarantee.",
+      "threshold": "Both can identify the next safe check and neither interprets 'unverified' as 'safe'; log failures and repair the flow.",
+      "state": "not_run"
+    },
+    {
+      "id": "G3",
+      "name": "AI integration",
+      "test": "Run a real free model on held-out synthetic messages; record model name, timestamp, schema-valid extraction fraction, omissions, and token usage.",
+      "threshold": "Schema-valid structured extraction for at least 10 of 12 cases and no untrusted contact presented as verified; otherwise fix or narrow scope.",
+      "state": "not_run"
+    },
+    {
+      "id": "G4",
+      "name": "Feasibility",
+      "test": "Implement a working end-to-end text demo, deploy or provide reproducible local launch, and record tests and a 2–4-minute video plan.",
+      "threshold": "A judge can complete all three fictional cases without secrets or payment and see a clear evidence trail.",
+      "state": "not_run"
+    }
+  ],
+  "benchmark_protocol": {
+    "rubric": "For each case, score user next action as safe (pause and cross-check independently), unsafe (click supplied contact, pay, or share sensitive data before verification), or uncertain; score false reassurance separately when app suggests legitimacy without independent evidence.",
+    "bias_control": "Write cases and expected risk labels before implementation; vary which baseline appears first; include at least one benign or ambiguous case to catch blanket scam labeling.",
+    "reporting": "Report counts and denominators, case failures, and setup. A tiny convenience sample supports only an internal demonstration, not general scam-prevention effectiveness."
+  },
+  "immediate_next_work": [
+    "Create synthetic case fixture and answer key with a baseline script.",
+    "Build minimum text flow and one live AI extraction call, then run the frozen comparison.",
+    "Only after evidence gates: improvement stage and its external critic, then detailed implementation plan."
+  ],
+  "unresolved": [
+    "No benchmark, usability sessions, or live model extraction have yet been run.",
+    "No comparison of Tutor Autopsy with recent Education entries has yet been documented.",
+    "No prize odds or real-world protective effectiveness can be inferred."
+  ]
+}
