@@ -1,0 +1,30 @@
+{
+  "goal": "Select and build an AI-powered ForgeHacks 2026 project with a working demo, honest evidence and a realistic shot at overall or track judging; do not claim winning odds",
+  "audience": "Student hackathon judges and an actual narrow target user; one student builder in Iraq",
+  "competition": {
+    "name": "ForgeHacks Online 2026",
+    "rules_url": "https://forgehacks-2026.devpost.com/rules",
+    "track_prompts_url": "https://forgehacks.vercel.app/",
+    "deadline": "2026-10-10 12:00 EDT / 19:00 Asia/Baghdad",
+    "judging": [
+      "Real-world impact; must answer the track prompt",
+      "Technical implementation and meaningful AI use",
+      "Innovation",
+      "Working, complete demo",
+      "Presentation and communication"
+    ],
+    "submission": [
+      "2-4 minute public video",
+      "GitHub source and README",
+      "Description with target users, approach, impact",
+      "Screenshots, architecture or demo link"
+    ]
+  },
+  "constraints": {
+    "team_size": 1,
+    "time_days_remaining": 6,
+    "budget_usd": 0,
+    "existing_code": "Only a pre-event strategy document; substantial build must occur during the event"
+  },
+  "notes": "The official AI+Cybersecurity prompt concerns recognition, prevention, verification or response to scams, impersonation and fraud enabled by AI/modern technologies. The older ActionProof refund-permission concept does not directly answer it. Critic should challenge any unsupported novelty or impact claim."
+}
