@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: offerproof-forgehacks
+    runtime: python
+    plan: free
+    buildCommand: "python -m py_compile offerproof.py"
+    startCommand: "python offerproof.py"
+    healthCheckPath: /health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: GROQ_API_KEY
+        sync: false
