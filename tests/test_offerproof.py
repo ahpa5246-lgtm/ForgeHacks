@@ -19,11 +19,16 @@ class AnalysisTests(unittest.TestCase):
         self.assertTrue(call.call_args.args[0].full_url.startswith("https://api.groq.com/"))
         self.assertNotIn("test-secret", str(claims))
 
-    def test_ai_call_budget_falls_back_without_network_request(self):
-        with patch.dict("os.environ", {"GROQ_API_KEY": "test-secret", "MAX_AI_CALLS": "0"}), patch("offerproof.urlopen") as call:
-            result = analyze("Interview invitation for an internship")
-        self.assertEqual(result["mode"], "rules_fallback")
-        call.assert_not_called()
+    def test_app_does_not_stop_model_after_thirty_requests(self):
+        class Reply:
+            def __enter__(self): return self
+            def __exit__(self, *_): return False
+            def read(self):
+                return json.dumps({"choices": [{"message": {"content": '{"claims": []}'}}]}).encode()
+        with patch.dict("os.environ", {"GROQ_API_KEY": "test-secret"}), patch("offerproof.urlopen", side_effect=lambda *_args, **_kwargs: Reply()) as call:
+            modes = [analyze("Interview invitation for an internship")["mode"] for _ in range(31)]
+        self.assertEqual(modes, ["ai_extract"] * 31)
+        self.assertEqual(call.call_count, 31)
 
     def test_upfront_payment_is_flagged_without_claiming_verified(self):
         result = analyze("Pay a $29 training deposit to secure your remote job tonight.")
