@@ -1,11 +1,24 @@
 import json
 import io
 import unittest
+from unittest.mock import patch
 
-from offerproof import Handler, analyze
+from offerproof import Handler, analyze, groq_extract
 
 
 class AnalysisTests(unittest.TestCase):
+    def test_live_adapter_parses_provider_reply_without_exposing_key(self):
+        class Reply:
+            def __enter__(self): return self
+            def __exit__(self, *_): return False
+            def read(self):
+                return json.dumps({"choices": [{"message": {"content": json.dumps({"claims": [{"snippet": "Intern", "category": "role"}]})}}]}).encode()
+        with patch.dict("os.environ", {"GROQ_API_KEY": "test-secret"}), patch("offerproof.urlopen", return_value=Reply()) as call:
+            claims = groq_extract("Intern role")
+        self.assertEqual(claims["claims"][0]["snippet"], "Intern")
+        self.assertTrue(call.call_args.args[0].full_url.startswith("https://api.groq.com/"))
+        self.assertNotIn("test-secret", str(claims))
+
     def test_upfront_payment_is_flagged_without_claiming_verified(self):
         result = analyze("Pay a $29 training deposit to secure your remote job tonight.")
         self.assertEqual(result["status"], "red_flag_observed")
