@@ -117,16 +117,25 @@ def assess_evidence(items):
     if not isinstance(items, list) or len(items) > 10:
         raise ValueError("Up to ten evidence notes are allowed")
     accepted = []
-    for item in items:
+    collapsed = []
+    dependent = []
+    for index, item in enumerate(items):
         if not isinstance(item, dict):
             raise ValueError("Invalid evidence note")
         kind, source, observation = (item.get(k) for k in ("kind", "source", "observation"))
         if kind not in {"company_careers", "company_contact", "other"} or source not in {"independent", "message", "ai"} or not isinstance(observation, str) or len(observation) > 300:
             raise ValueError("Invalid evidence note")
-        if source == "independent" and observation.strip():
+        origin = item.get("derived_from")
+        if origin is not None and (type(origin) is not int or origin < 0 or origin >= index):
+            raise ValueError("Invalid evidence dependency")
+        is_dependent = source != "independent" or (origin is not None and dependent[origin])
+        dependent.append(is_dependent)
+        if is_dependent and source == "independent":
+            collapsed.append(index)
+        if not is_dependent and observation.strip():
             accepted.append({"kind": kind, "source": source, "observation": observation.strip()})
     return {"status": "unverified", "sender_authenticated": False,
-            "accepted_evidence": accepted,
+            "accepted_evidence": accepted, "source_collapses": collapsed,
             "remaining_questions": ["Does the independent company listing match this role? A listing alone does not authenticate the sender.",
                                     "Have you reached the company through a channel you found independently to confirm this specific contact?"]}
 

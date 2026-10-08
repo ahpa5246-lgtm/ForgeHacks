@@ -73,6 +73,28 @@ class AnalysisTests(unittest.TestCase):
         self.assertEqual(result["accepted_evidence"], [])
         self.assertEqual(result["status"], "unverified")
 
+    def test_source_collapse_through_intermediate_note(self):
+        notes = [
+            {"kind": "other", "observation": "Search result copied the recruiter link", "source": "message"},
+            {"kind": "company_careers", "observation": "The page repeats the role", "source": "independent", "derived_from": 0},
+        ]
+        result = assess_evidence(notes)
+        self.assertEqual(result["accepted_evidence"], [])
+        self.assertIn(1, result["source_collapses"])
+
+    def test_independent_sources_remain_unverified(self):
+        notes = [
+            {"kind": "company_careers", "observation": "Role listed", "source": "independent"},
+            {"kind": "company_contact", "observation": "I called a known switchboard", "source": "independent"},
+        ]
+        result = assess_evidence(notes)
+        self.assertEqual(len(result["accepted_evidence"]), 2)
+        self.assertFalse(result["sender_authenticated"])
+
+    def test_invalid_future_dependency_is_rejected(self):
+        with self.assertRaises(ValueError):
+            assess_evidence([{"kind": "other", "observation": "A", "source": "independent", "derived_from": 0}])
+
     def test_action_after_password_disclosure_is_separate_from_offer_rating(self):
         steps = response_steps(["shared_password"])
         self.assertTrue(any("password" in step.lower() for step in steps))
