@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.request import Request, urlopen
@@ -10,6 +11,8 @@ from urllib.request import Request, urlopen
 
 MAX_MESSAGE = 12000
 HERE = Path(__file__).resolve().parent
+_budget_lock = threading.Lock()
+_ai_calls_used = 0
 PATTERNS = {
     "upfront_payment": re.compile(r"\b(pay|fee|deposit|purchase|wire|crypto|wallet|upfront|gift card)\b", re.I),
     "credential_request": re.compile(r"\b(password|one.time (?:code|password)|login code|2fa|otp)\b", re.I),
@@ -43,6 +46,11 @@ def groq_extract(message):
     key = os.environ.get("GROQ_API_KEY")
     if not key:
         return None
+    global _ai_calls_used
+    with _budget_lock:
+        if _ai_calls_used >= max(0, int(os.environ.get("MAX_AI_CALLS", "30"))):
+            return None
+        _ai_calls_used += 1
     body = {
         "model": os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b"),
         "temperature": 0,
