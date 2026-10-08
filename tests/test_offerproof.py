@@ -3,7 +3,7 @@ import io
 import unittest
 from unittest.mock import patch
 
-from offerproof import Handler, analyze, groq_extract
+from offerproof import Handler, analyze, assess_evidence, response_steps, groq_extract
 
 
 class AnalysisTests(unittest.TestCase):
@@ -62,6 +62,22 @@ class AnalysisTests(unittest.TestCase):
         result = analyze("We will send you a check to buy equipment from our supplier.")
         self.assertIn("equipment_check", result["red_flags"])
 
+    def test_careers_listing_does_not_authenticate_recruiter(self):
+        result = assess_evidence([{"kind": "company_careers", "observation": "Job listing exists", "source": "independent"}])
+        self.assertFalse(result["sender_authenticated"])
+        self.assertEqual(result["status"], "unverified")
+        self.assertIn("listing", result["remaining_questions"][0].lower())
+
+    def test_link_from_original_message_is_not_independent_evidence(self):
+        result = assess_evidence([{"kind": "company_careers", "observation": "Job listing exists", "source": "message"}])
+        self.assertEqual(result["accepted_evidence"], [])
+        self.assertEqual(result["status"], "unverified")
+
+    def test_action_after_password_disclosure_is_separate_from_offer_rating(self):
+        steps = response_steps(["shared_password"])
+        self.assertTrue(any("password" in step.lower() for step in steps))
+        self.assertTrue(any("multi-factor" in step.lower() for step in steps))
+
 
 class HttpTests(unittest.TestCase):
     def call(self, path, payload):
@@ -90,6 +106,11 @@ class HttpTests(unittest.TestCase):
     def test_does_not_expose_key_or_arbitrary_files(self):
         status, _ = self.call("/../offerproof.py", {"message": "hello"})
         self.assertEqual(status, 404)
+
+    def test_assess_endpoint_does_not_return_verified(self):
+        status, data = self.call("/api/assess", {"evidence": [{"kind": "company_careers", "observation": "Job listing exists", "source": "independent"}]})
+        self.assertEqual(status, 200)
+        self.assertFalse(data["sender_authenticated"])
 
 
 if __name__ == "__main__":

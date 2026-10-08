@@ -112,6 +112,39 @@ def analyze(message, extractor=None):
     }
 
 
+def assess_evidence(items):
+    """Track user-reported source provenance; never authenticate a sender."""
+    if not isinstance(items, list) or len(items) > 10:
+        raise ValueError("Up to ten evidence notes are allowed")
+    accepted = []
+    for item in items:
+        if not isinstance(item, dict):
+            raise ValueError("Invalid evidence note")
+        kind, source, observation = (item.get(k) for k in ("kind", "source", "observation"))
+        if kind not in {"company_careers", "company_contact", "other"} or source not in {"independent", "message", "ai"} or not isinstance(observation, str) or len(observation) > 300:
+            raise ValueError("Invalid evidence note")
+        if source == "independent" and observation.strip():
+            accepted.append({"kind": kind, "source": source, "observation": observation.strip()})
+    return {"status": "unverified", "sender_authenticated": False,
+            "accepted_evidence": accepted,
+            "remaining_questions": ["Does the independent company listing match this role? A listing alone does not authenticate the sender.",
+                                    "Have you reached the company through a channel you found independently to confirm this specific contact?"]}
+
+
+def response_steps(events):
+    if not isinstance(events, list) or len(events) > 3 or any(e not in {"shared_password", "paid", "shared_id"} for e in events):
+        raise ValueError("Invalid action")
+    steps = []
+    if "shared_password" in events:
+        steps += ["Change the exposed password on the real service and anywhere reused, using a trusted route.",
+                  "Turn on multi-factor authentication and check active sessions or recovery settings."]
+    if "paid" in events:
+        steps += ["Contact your bank or payment provider through an independently found channel immediately; ask about reversal or fraud reporting."]
+    if "shared_id" in events:
+        steps += ["Contact the relevant identity provider or local consumer protection authority for identity theft guidance."]
+    return steps or ["Do not pay, send credentials, or open links in the message. Verify through a company channel you find independently."]
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, _format, *_args):
         # Messages may be sensitive; do not log request bodies or query parameters.
@@ -142,7 +175,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_POST(self):
-        if self.path != "/api/analyze":
+        if self.path not in ("/api/analyze", "/api/assess", "/api/respond"):
             return self.send_json(404, {"error": "Not found"})
         try:
             length = int(self.headers.get("Content-Length", "0"))
@@ -151,6 +184,10 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length))
             if not isinstance(payload, dict):
                 raise ValueError("Invalid input")
+            if self.path == "/api/assess":
+                return self.send_json(200, assess_evidence(payload.get("evidence")))
+            if self.path == "/api/respond":
+                return self.send_json(200, {"steps": response_steps(payload.get("events"))})
             return self.send_json(200, analyze(payload.get("message")))
         except (ValueError, UnicodeError, TypeError):
             return self.send_json(400, {"error": "Enter a message of at most 12000 characters"})

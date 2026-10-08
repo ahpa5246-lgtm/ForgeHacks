@@ -2,7 +2,7 @@
 
 **A narrow, honest job-offer verification assistant for ForgeHacks 2026 (AI + Cybersecurity).**
 
-Students can paste a suspicious recruiting message. The app quotes claims from the message, marks common high-risk requests, and guides the student to check an employer through a channel they selected independently. Every result stays **unverified**: a job listing does not authenticate a recruiter. Nothing in the message is fetched or visited.
+Students can paste a suspicious recruiting message. The app quotes claims from the message, marks common high-risk requests, records where a user's observations came from, and provides response steps if the student already shared a password, money, or documents. Every result stays **unverified**: a job listing does not authenticate a recruiter. Nothing in the message is fetched or visited.
 
 ## Run locally
 
@@ -21,18 +21,22 @@ The included `render.yaml` can create a Render Free web service from this reposi
 1. **Payment request:** select the first example. A red flag appears, with no safe/verified label.
 2. **Plausible interview:** select the second. No flag is found, yet the result remains unverified.
 3. **Identity request:** select the third. The app says to stop sending sensitive documents.
+4. **Evidence provenance:** log a job listing from the message's link, then from an independently found channel. The first is excluded from independent evidence; neither authenticates the sender.
+5. **Response:** select “I shared a password” and display password reset and multi-factor authentication steps.
 
 If AI is configured, `AI quoted claims from the message` appears. Each quote is accepted only if it occurs verbatim in the pasted text. Any AI-generated URL or verdict is discarded. The heuristic warning list is deterministic and limited; it cannot detect every scam, and negated phrases or unusual wording can still create false alarms or missed signals.
 
 ## Architecture
 
-`Browser textarea → local Python HTTP server → bounded AI claim extraction (optional) → verbatim-quote filter + deterministic warning rules → unverified result`.
+`Browser message → local Python HTTP server → bounded AI claim extraction (optional) → verbatim-quote filter + deterministic warning rules → unverified result`. The source-provenance ledger and response endpoint are separate deterministic paths.
 
-The AI is used for claim extraction, not for a risk score or a legitimacy verdict. A warning rule can escalate the status to `red_flag_observed`; no rule or model can set `verified=true`. A user note remains in the tab only; no message or note is persisted by the server. External AI processing sends the message to Groq when the key is configured, so fictional messages are preferable for the demo. Do not paste sensitive personal data.
+The AI is used for claim extraction, not for a risk score or a legitimacy verdict. A warning rule can escalate the status to `red_flag_observed`; no rule or model can set `verified=true`. Evidence observations are user reports; the service does not independently verify the claims or URLs. Notes remain in the tab only; no message or note is persisted by the server. External AI processing sends the message to Groq when the key is configured, so fictional messages are preferable for the demo. Do not paste sensitive personal data.
 
 ## Testing and evidence
 
 Run `python -m unittest discover -s tests -v`. The included 12 fictional cases are a **development smoke set**; the warning rules were refined after seeing these cases, so scores on them are not blinded evidence of superiority over FTC advice. A valid impact claim would require a separate frozen holdout set, a randomized checklist comparison, and independent usability sessions. None have been completed. See `docs/research/2026-10-05-research-revision.json` for the research gates.
+
+Strategic assessment: this is a relevant cybersecurity prototype, but its current AI component is narrow and its impact and novelty have not been established against comparable tools. There is no credible basis for a winning claim. The next strongest evidence would be a live provider demonstration, outside-user task completion, and an independent holdout comparison, with failures reported as well as successes.
 
 ## Hackathon presentation
 
