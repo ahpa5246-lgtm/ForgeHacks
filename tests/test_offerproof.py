@@ -53,6 +53,19 @@ class AnalysisTests(unittest.TestCase):
         self.assertNotIn("https://fake.example", json.dumps(result))
         self.assertEqual(result["status"], "unverified")
 
+    def test_ai_cautions_are_source_bound_and_never_verify(self):
+        def extractor(_):
+            return {"claims": [], "verified": True, "signals": [
+                {"kind": "urgency", "snippet": "before lunch", "url": "https://fake.invalid"},
+                {"kind": "impersonation", "snippet": "made up claim"},
+                {"kind": "payment", "snippet": "before lunch", "explanation": "User-generated fake advice"}]}
+        result = analyze("Reply before lunch for an interview.", extractor=extractor)
+        self.assertFalse(result["verified"])
+        self.assertEqual(len(result["ai_attention"]), 2)
+        self.assertEqual(result["status"], "unverified")
+        self.assertNotIn("fake.invalid", json.dumps(result))
+        self.assertNotIn("User-generated fake advice", json.dumps(result))
+
     def test_model_failure_uses_disclosed_fallback(self):
         def broken(_):
             raise TimeoutError("provider timeout")
