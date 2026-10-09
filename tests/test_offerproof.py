@@ -1,9 +1,10 @@
 import json
 import io
 import unittest
+from time import monotonic
 from unittest.mock import patch
 
-from offerproof import Handler, analyze, assess_evidence, response_steps, groq_extract
+from offerproof import Handler, analyze, assess_evidence, response_steps, groq_extract, allow_demo_call
 
 
 class AnalysisTests(unittest.TestCase):
@@ -51,6 +52,19 @@ class AnalysisTests(unittest.TestCase):
         self.assertNotIn("url", result["claims"])
         self.assertNotIn("https://fake.example", json.dumps(result))
         self.assertEqual(result["status"], "unverified")
+
+    def test_ai_cautions_are_source_bound_and_never_verify(self):
+        def extractor(_):
+            return {"claims": [], "verified": True, "signals": [
+                {"kind": "urgency", "snippet": "before lunch", "url": "https://fake.invalid"},
+                {"kind": "impersonation", "snippet": "made up claim"},
+                {"kind": "payment", "snippet": "before lunch", "explanation": "User-generated fake advice"}]}
+        result = analyze("Reply before lunch for an interview.", extractor=extractor)
+        self.assertFalse(result["verified"])
+        self.assertEqual(len(result["ai_attention"]), 2)
+        self.assertEqual(result["status"], "unverified")
+        self.assertNotIn("fake.invalid", json.dumps(result))
+        self.assertNotIn("User-generated fake advice", json.dumps(result))
 
     def test_model_failure_uses_disclosed_fallback(self):
         def broken(_):
@@ -138,6 +152,61 @@ class HttpTests(unittest.TestCase):
         status, data = self.call("/api/assess", {"evidence": [{"kind": "company_careers", "observation": "Job listing exists", "source": "independent"}]})
         self.assertEqual(status, 200)
         self.assertFalse(data["sender_authenticated"])
+
+
+class ReleaseChecks(unittest.TestCase):
+    def get(self, path):
+        handler = Handler.__new__(Handler)
+        handler.path = path
+        handler.wfile = io.BytesIO()
+        statuses, headers = [], []
+        handler.send_response = lambda code: statuses.append(code)
+        handler.send_header = lambda key, value: headers.append((key, value))
+        handler.end_headers = lambda: None
+        handler.do_GET()
+        return statuses[0], dict(headers), handler.wfile.getvalue()
+
+    def test_frontend_assets_are_served_with_safe_mime_types(self):
+        for path, content_type, marker in [
+            ("/", "text/html; charset=utf-8", b"Investigation Workspace"),
+            ("/dashboard.css", "text/css; charset=utf-8", b".hero"),
+            ("/dashboard.js", "text/javascript; charset=utf-8", b"renderGraph"),
+        ]:
+            with self.subTest(path=path):
+                status, headers, body = self.get(path)
+                self.assertEqual(status, 200)
+                self.assertEqual(headers["Content-Type"], content_type)
+                self.assertIn(marker, body)
+                self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
+                self.assertEqual(headers["Referrer-Policy"], "no-referrer")
+                self.assertIn("script-src 'self'", headers["Content-Security-Policy"])
+                self.assertNotIn("'unsafe-inline'", headers["Content-Security-Policy"])
+
+    def test_unknown_or_sensitive_paths_rejected(self):
+        for path in ("/offerproof.py", "/../offerproof.py", "/.env", "/dashboard.css?other=1"):
+            with self.subTest(path=path):
+                status, _, _ = self.get(path)
+                self.assertEqual(status, 404)
+
+    def test_frontend_has_navigation_and_no_html_injection_renderer(self):
+        from pathlib import Path
+        base = Path(__file__).resolve().parents[1]
+        html = (base / "index.html").read_text(encoding="utf-8")
+        javascript = (base / "dashboard.js").read_text(encoding="utf-8")
+        for section in ("view-overview", "view-inspect", "view-evidence", "view-response"):
+            self.assertIn(section, html)
+        self.assertIn("source-collapse", html)
+        self.assertIn("textContent", javascript)
+        self.assertNotIn("innerHTML", javascript)
+        self.assertNotIn("eval(", javascript)
+
+    def test_demo_rate_limit_is_bounded_and_resets(self):
+        marker = "limit-check-"+str(id(self))
+        now = monotonic()
+        for _ in range(12):
+            self.assertTrue(allow_demo_call(marker, now=now))
+        self.assertFalse(allow_demo_call(marker, now=now))
+        self.assertTrue(allow_demo_call(marker, now=now+61))
 
 
 if __name__ == "__main__":
