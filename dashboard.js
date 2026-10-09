@@ -62,6 +62,13 @@ $("analyze").addEventListener("click",async()=>{
   $("flags").replaceChildren();
   if(Array.isArray(result.flag_explanations)&&result.flag_explanations.length){result.flag_explanations.forEach(f=>append($("flags"),"div","flag",f));}
   else append($("flags"),"p","fine","No matching pattern found. Scammers may use other wording.");
+  $("ai-checks").hidden=!(Array.isArray(result.ai_attention)&&result.ai_attention.length);
+  $("ai-signals").replaceChildren();
+  (result.ai_attention||[]).forEach(a=>{
+   const box=append($("ai-signals"),"div","flag","");
+   append(box,"strong","",a.kind+": ");
+   append(box,"span","","“"+a.snippet+"” — "+a.explanation);
+  });
   $("caution").textContent=result.caution||"No authenticity verdict is available.";
   $("steps").replaceChildren();(result.next_steps||[]).forEach(s=>append($("steps"),"li","",s));
   $("inspection-panel").scrollIntoView({behavior:"smooth",block:"start"});
