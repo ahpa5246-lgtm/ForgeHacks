@@ -602,3 +602,24 @@ textarea:focus,input:focus,select:focus{box-shadow:0 0 0 4px #72b69b2b;outline:n
 @media(min-width:621px){.logo .logotext{display:inline}}
 @media(min-width:980px){.nav .navtext{display:inline}}
 @media(min-width:621px) and (max-width:979px){.nav button{min-width:43px;justify-content:center}.nav .navtext{display:none}}
+
+/* The actual provenance DAG is its own animated chapter. */
+.evidence-svg .graph-edges>path{
+ animation:graphTrace 1.3s cubic-bezier(.19,.75,.2,1) both;
+}
+.evidence-svg .graph-stage-node{
+ transform-box:fill-box;
+ transform-origin:center;
+ animation:graphNodeArrives .7s cubic-bezier(.2,.78,.2,1) both;
+}
+@keyframes graphTrace{
+ 0%{opacity:0;stroke-dashoffset:160}
+ 100%{opacity:1;stroke-dashoffset:0}
+}
+@keyframes graphNodeArrives{
+ 0%{opacity:0;transform:scale(.86) translateY(12px)}
+ 100%{opacity:1;transform:scale(1) translateY(0)}
+}
+@media(prefers-reduced-motion:reduce){
+ .evidence-svg .graph-edges>path,.evidence-svg .graph-stage-node{animation:none!important;opacity:1!important}
+}
