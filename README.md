@@ -32,6 +32,12 @@ Open the homepage and choose **Run full evidence demo**. OfferProof analyzes a s
 
 See [Judge quickstart](docs/judges-quickstart.md) for the 75-second showcase.
 
+## AI-assisted cross-evidence challenge (v3)
+
+The Evidence Lab now includes **Challenge the evidence** after a message inspection and at least one user-reported source. With explicit browser consent, the message and observation texts are sent to Groq for a constrained *cross-evidence comparison*. The model must return **two exact original substrings** (one from the message, one from an observation) and one of a small allowlist of discrepancy types. The server rejects invented quotes, unrecognized categories and model-generated addresses or verdicts, and annotates each hypothesis with the provenance engine's actual source classification. **An AI comparison never authenticates a source or establishes which claim is correct.** When the provider is not configured or fails, the interface clearly states that no semantic comparison occurred. The endpoint shares the in-memory public-demo rate limit with message inspection.
+
+If recording a demo, enable this feature only with fictional messages/observations and show its AI/fallback label honestly; the model may return no discrepancies. See the judge walkthrough.
+
 ## Demo in three cases
 
 1. **Payment request:** select the first example. A red flag appears, with no safe/verified label.
