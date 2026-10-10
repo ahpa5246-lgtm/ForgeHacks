@@ -235,8 +235,14 @@ class Handler(BaseHTTPRequestHandler):
             if self.path == "/api/respond":
                 return self.send_json(200, {"steps": response_steps(payload.get("events"))})
             if self.path == "/api/compare":
+                if payload.get("groq_consent") is not True:
+                    return self.send_json(400, {"error": "Explicit Groq data-processing consent is required"})
                 return self.send_json(200, review_case(payload.get("message"), payload.get("evidence")))
-            return self.send_json(200, analyze(payload.get("message")))
+            external = payload.get("groq_consent") is True
+            result = analyze(payload.get("message"),
+                             extractor=None if external else (lambda _: None))
+            result["external_ai_requested"] = external
+            return self.send_json(200, result)
         except (ValueError, UnicodeError, TypeError):
             return self.send_json(400, {"error": "Enter a message of at most 12000 characters"})
 
