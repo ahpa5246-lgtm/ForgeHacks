@@ -147,3 +147,17 @@ def provenance_graph(items):
         ],
         "method": "user_reported_provenance_not_source_authentication"
     }
+
+
+def safe_provider_failure(exc):
+    """Return only an error CATEGORY; never log or return provider response text."""
+    from urllib.error import HTTPError, URLError
+    if isinstance(exc, HTTPError):
+        return "provider_http_" + str(exc.code)
+    if isinstance(exc, TimeoutError):
+        return "provider_timeout"
+    if isinstance(exc, URLError):
+        return "provider_network_error"
+    if isinstance(exc, (ValueError, KeyError, TypeError, IndexError)):
+        return "invalid_provider_response"
+    return "provider_unexpected_error"
