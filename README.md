@@ -32,6 +32,14 @@ Open the homepage and choose **Run full evidence demo**. OfferProof analyzes a s
 
 See [Judge quickstart](docs/judges-quickstart.md) for the 75-second showcase.
 
+## Cinematic case narrative (presentation layer)
+
+The landing page now presents a three-act fictional investigation — **The Approach**, **The Illusion**, and **The Reveal** — with animated CSS message cards, an evidence-origin illusion, cinematic chapter transitions, progress indicator, and a one-click bridge into the *real* deterministic source-provenance demo. The workspace retains the original Inspect, Evidence Lab, and Response Center flows and their API contracts. An actual SVG DAG animates source edges and nodes as the user builds the case.
+
+The visual effects use local CSS and a small same-origin script (no remote image, animation or font dependencies). Motion-heavy effects are disabled by the user's reduced-motion accessibility preference. The page remains keyboard navigable with a skip link and labeled navigation controls. The 40+ unit checks and automated Chromium desktop/mobile scenarios remain the release gates.
+
+**Presentation boundary:** The story is fictional. The animated cards and storyboard are illustrative, while the **Run full evidence demo** button operates on the actual analysis and graph APIs. This redesign does not claim new fraud-detection accuracy or solve the still-outstanding live Groq HTTP 403 access issue.
+
 ## Offline sender-link discovery (v5)
 
 When the message contains HTTP(S) links, OfferProof extracts up to three distinct **hostnames** without browsing them or making DNS requests. It automatically records these as non-independent, message-derived source leads in the Evidence Lab. Full URLs, paths, credentials and query strings are not copied into the graph or report. Even a familiar hostname is **not evidence of authenticity**; the feature records only what the untrusted sender supplied. Users still report any subsequently discovered evidence and its dependencies.
