@@ -73,6 +73,35 @@ class AnalysisTests(unittest.TestCase):
         self.assertEqual(result["mode"], "rules_fallback")
         self.assertIn("credential_request", result["red_flags"])
 
+
+    def test_explicit_denials_do_not_trigger_known_flags(self):
+        examples = [
+            ("We will never ask you to pay a fee.", "upfront_payment"),
+            ("Never share your password.", "credential_request"),
+            ("We will not ask for your passport.", "sensitive_data_request"),
+        ]
+        for message, flag in examples:
+            self.assertNotIn(flag, analyze(message, extractor=lambda _: None)["red_flags"])
+
+    def test_multi_parent_source_collapse(self):
+        items = [
+            {"kind": "other", "source": "message", "observation": "Sender link"},
+            {"kind": "other", "source": "independent", "observation": "Independent channel"},
+            {"kind": "company_careers", "source": "independent",
+             "observation": "A later page depends on both", "derived_from": [0, 1]},
+        ]
+        result = assess_evidence(items)
+        self.assertIn(2, result["source_collapses"])
+        self.assertEqual(result["nodes"][2]["tainted_by"], ["message"])
+        self.assertEqual(len(result["edges"]), 3)
+        self.assertFalse(result["sender_authenticated"])
+
+    def test_claim_based_questions_are_source_bounded(self):
+        result = analyze("Intern at Harbor Systems", extractor=lambda _: {
+            "claims": [{"snippet": "Harbor Systems", "category": "employer"}]})
+        self.assertEqual(len(result["verification_questions"]), 1)
+        self.assertFalse(result["verified"])
+
     def test_negated_fee_does_not_trigger_payment_flag(self):
         result = analyze("An internship interview is offered; no fee is mentioned.")
         self.assertNotIn("upfront_payment", result["red_flags"])
