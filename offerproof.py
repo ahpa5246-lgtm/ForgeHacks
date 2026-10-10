@@ -11,6 +11,7 @@ from time import monotonic
 from urllib.request import Request, urlopen
 from investigation import is_explicit_denial, bounded_model_signals, provenance_graph, quoted_questions, safe_provider_failure
 from cross_review import review_case
+from provider import configured_provider, provider_connection, prepare_json_request
 from discovery import message_source_seeds
 
 
@@ -62,11 +63,11 @@ def find_flags(message):
 
 def groq_extract(message):
     """The model returns quoted claims only; its output is never an authority source."""
-    key = os.environ.get("GROQ_API_KEY")
-    if not key:
+    config = provider_connection()
+    if not config:
         return None
     body = {
-        "model": os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b"),
+        "model": config["model"],
         "temperature": 0,
         "max_tokens": 800,
         "response_format": {"type": "json_object"},
@@ -75,13 +76,11 @@ def groq_extract(message):
             {"role": "user", "content": message},
         ],
     }
-    if body["model"] == "qwen/qwen3.8-27b":
-        # Official Groq recommendation for fast, non-reasoning JSON tasks.
-        body.update({"temperature": 0.7, "reasoning_effort": "none",
-                     "reasoning_format": "hidden"})
-    request = Request("https://api.groq.com/openai/v1/chat/completions",
+    prepare_json_request(body, config)
+    request = Request(config["url"],
                       data=json.dumps(body).encode("utf-8"),
-                      headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
+                      headers={"Authorization": "Bearer " + config["key"],
+                               "Content-Type": "application/json"},
                       method="POST")
     with urlopen(request, timeout=15) as response:
         reply = json.load(response)
@@ -208,7 +207,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/health":
-            return self.send_json(200, {"ok": True, "ai_configured": bool(os.environ.get("GROQ_API_KEY"))})
+            return self.send_json(200, {"ok": True, "ai_configured": bool(configured_provider()),
+                                        "ai_provider": configured_provider() or "none"})
         assets = {
             "/": ("index.html", "text/html; charset=utf-8"),
             "/index.html": ("index.html", "text/html; charset=utf-8"),
@@ -246,7 +246,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, {"steps": response_steps(payload.get("events"))})
             if self.path == "/api/compare":
                 if payload.get("groq_consent") is not True:
-                    return self.send_json(400, {"error": "Explicit Groq data-processing consent is required"})
+                    return self.send_json(400, {"error": "Explicit external AI data-processing consent is required"})
                 return self.send_json(200, review_case(payload.get("message"), payload.get("evidence")))
             external = payload.get("groq_consent") is True
             result = analyze(payload.get("message"),
