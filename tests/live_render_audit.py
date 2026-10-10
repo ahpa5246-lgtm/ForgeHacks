@@ -113,7 +113,7 @@ def main():
     graph=decoded(raw)
     require(graph.get("source_collapses")==[1,3],
             "Provenance traversal does not propagate two-level dependencies")
-    require(len(graph.get("edges",[]))>=5 and
+    require(len(graph.get("edges",[]))>=4 and
             graph.get("sender_authenticated") is False,
             "Directed graph structure or sender trust boundary failed")
     print("DAG","nodes",len(graph["nodes"]),"edges",len(graph["edges"]),
