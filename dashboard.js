@@ -56,7 +56,7 @@ async function showAnalysis(result){
     "● AI analysis active — source quotations and tentative cautions only.":
     result.external_ai_requested===false?
     "● Private local-only inspection — the message was NOT sent to Groq.":
-    "● Rules-only fallback — AI was requested but unavailable or invalid.";
+    "● Rules-only fallback — AI was requested but unavailable or invalid"+(result.ai_failure_reason?" ("+result.ai_failure_reason+")":"")+".";
  $("claims").replaceChildren();
  if(Array.isArray(result.claims)&&result.claims.length){
   result.claims.forEach(c=>{
@@ -201,7 +201,7 @@ $("compare-case").addEventListener("click",async()=>{
   $("compare-mode").className="mode"+(active?"":" fallback");
   $("compare-mode").textContent=active?
    "● AI compared the two user-supplied text sets. All findings are hypotheses.":
-   "● AI unavailable or invalid: no semantic comparison was completed.";
+   "● AI unavailable or invalid"+(result.ai_failure_reason?" ("+result.ai_failure_reason+")":"")+": no semantic comparison was completed.";
   $("comparison-list").replaceChildren();
   if(active && result.comparisons.length){
    result.comparisons.forEach((item,i)=>{
