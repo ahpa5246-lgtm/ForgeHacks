@@ -7,7 +7,7 @@ import json
 import os
 from urllib.request import Request, urlopen
 
-from investigation import provenance_graph
+from investigation import provenance_graph, safe_provider_failure
 
 KINDS = {
     "employer_mismatch": "The organization named in the two excerpts may not match.",
@@ -66,7 +66,7 @@ def review_case(message, notes, extractor=None):
         raise ValueError("Invalid message")
     graph = provenance_graph(notes)
     result = {
-        "mode": "rules_fallback", "comparisons": [],
+        "mode": "rules_fallback", "comparisons": [], "ai_failure_reason": None,
         "status": "unverified", "sender_authenticated": False,
         "scope": "user_submitted_texts_only",
         "disclaimer": "These are unverified, AI-suggested textual differences. "
@@ -109,7 +109,8 @@ def review_case(message, notes, extractor=None):
             if len(result["comparisons"])>=4:
                 break
         result["mode"]="ai_compare"
-    except Exception:
+    except Exception as error:
         # Provider failures and invalid model data must never become verdicts.
+        result["ai_failure_reason"] = safe_provider_failure(error)
         return result
     return result
