@@ -7,7 +7,7 @@ const samples={
  C:"Your application has been approved. Send a passport scan and bank account details immediately before the interview."
 };
 const titles={overview:"Overview",inspect:"Inspect a message",evidence:"Evidence lab",response:"Response center"};
-let evidence=[],assessment=null;
+let evidence=[],assessment=null,latestInspection=null;
 function el(tag,cls,str){const x=document.createElement(tag);if(cls)x.className=cls;if(str!==undefined)x.textContent=str;return x;}
 function append(target,tag,cls,str){const x=el(tag,cls,str);target.appendChild(x);return x;}
 function go(view){
@@ -39,99 +39,167 @@ async function post(path,payload){
  finally{clearTimeout(timeout);}
 }
 function resetEvidence(){
- evidence=[];assessment=null;$("evidence-log").replaceChildren();$("origin").replaceChildren(new Option("No earlier observation",""));
+ evidence=[];assessment=null;$("evidence-log").replaceChildren();$("origin-list").replaceChildren();
  $("observation").value="";$("evidence-message").textContent="";renderGraph();
+}
+function showAnalysis(result){
+ latestInspection=result;resetEvidence();$("inspect-empty").hidden=true;$("results").hidden=false;
+ const risky=result.status==="red_flag_observed";
+ $("result-status").className="status"+(risky?" alert":"");
+ $("result-title").textContent=risky?"Known warning signals detected":
+   (result.ai_attention&&result.ai_attention.length?"Possible AI cautions — still unverified":"No listed flags — still unverified");
+ $("result-detail").textContent=risky?"Pause and inspect the requests independently.":
+   "A missing rule-based flag never establishes sender authenticity.";
+ $("mode").className="mode"+(result.mode==="ai_extract"?"":" fallback");
+ $("mode").textContent=result.mode==="ai_extract"?
+    "● AI analysis active — source quotations and tentative cautions only.":
+    "● Rules-only fallback — model unconfigured, unavailable or invalid.";
+ $("claims").replaceChildren();
+ if(Array.isArray(result.claims)&&result.claims.length){
+  result.claims.forEach(c=>{
+   const box=append($("claims"),"div","claim");
+   append(box,"b","",c.category);
+   append(box,"span","","“"+c.snippet+"”");
+  });
+ }else append($("claims"),"p","fine","No exact quote extracted; read the message itself.");
+ $("flags").replaceChildren();
+ if(Array.isArray(result.flag_explanations)&&result.flag_explanations.length){
+  result.flag_explanations.forEach(f=>append($("flags"),"div","flag",f));
+ }else append($("flags"),"p","fine","No simple pattern matched; this is not a safety verdict.");
+ const cues=Array.isArray(result.ai_attention)?result.ai_attention:[];
+ $("ai-checks").hidden=!cues.length;$("ai-signals").replaceChildren();
+ cues.forEach(a=>{
+  const box=append($("ai-signals"),"div","flag");
+  append(box,"strong","",a.kind+": ");
+  append(box,"span","","“"+a.snippet+"” — "+a.explanation+" (hypothesis only)");
+ });
+ $("caution").textContent=result.caution||"No authenticity verdict is available.";
+ const questions=Array.isArray(result.verification_questions)?result.verification_questions:[];
+ $("question-section").hidden=!questions.length;$("verification-questions").replaceChildren();
+ questions.forEach((q,i)=>{
+  const box=append($("verification-questions"),"div","question-card");
+  append(box,"strong","","MISSION "+(i+1)+" · "+q.category);
+  append(box,"div","question-quote","“"+q.quote+"”");
+  append(box,"p","",q.question);
+ });
+ $("steps").replaceChildren();
+ (result.next_steps||[]).forEach(s=>append($("steps"),"li","",s));
+}
+async function inspect(message,focus){
+ const btn=$("analyze");btn.disabled=true;btn.textContent="Inspecting...";
+ $("flash").textContent="";
+ try{
+  const result=await post("/api/analyze",{message});
+  showAnalysis(result);
+  if(focus)$("inspection-panel").scrollIntoView({behavior:"smooth",block:"start"});
+  return true;
+ }catch(e){$("flash").textContent="Inspection failed: "+e.message;return false;}
+ finally{btn.disabled=false;btn.textContent="Inspect claims ↗";}
 }
 $("analyze").addEventListener("click",async()=>{
  const message=$("message").value.trim();
  if(!message){$("flash").textContent="Enter a message or select a fictional scenario.";return;}
- $("flash").textContent="";const btn=$("analyze");btn.disabled=true;btn.textContent="Inspecting...";
+ await inspect(message,true);
+});
+const demoNotes=[
+ {kind:"other",source:"message",observation:"The recruiter supplied a link claiming to display this vacancy."},
+ {kind:"company_careers",source:"independent",derived_from:[0],observation:"A polished vacancies page appears, but it was reached from that recruiter's link."},
+ {kind:"company_contact",source:"independent",observation:"A separate company contact channel found without the recruiter's links."},
+ {kind:"other",source:"independent",derived_from:[1,2],observation:"A comparison note mixing the recruiter-linked page and separately located channel."}
+];
+$("run-demo").addEventListener("click",async()=>{
+ const b=$("run-demo");b.disabled=true;b.textContent="Investigating...";
+ $("message").value=samples.B;$("count").textContent=samples.B.length+" / 12000";
  try{
-  const result=await post("/api/analyze",{message});
-  resetEvidence();$("inspect-empty").hidden=true;$("results").hidden=false;
-  const alert=result.status==="red_flag_observed";
-  $("result-status").className="status"+(alert?" alert":"");
-  $("result-title").textContent=alert?"Warning signals detected":"No listed flags — still unverified";
-  $("result-detail").textContent=alert?"Pause and inspect these risky requests independently.":"Missing red flags do not establish sender authenticity.";
-  $("mode").className="mode"+(result.mode==="ai_extract"?"":" fallback");
-  $("mode").textContent=result.mode==="ai_extract"?"● AI extraction active — exact quotes only, no AI verdicts.":"● Rules-only fallback — AI unavailable, unconfigured, or returned invalid data.";
-  $("claims").replaceChildren();
-  if(Array.isArray(result.claims)&&result.claims.length){
-   result.claims.forEach(c=>{const box=append($("claims"),"div","claim");append(box,"b","",c.category);append(box,"span","","“"+c.snippet+"”");});
-  }else append($("claims"),"p","fine","No exact quotes extracted. Review the message yourself.");
-  $("flags").replaceChildren();
-  if(Array.isArray(result.flag_explanations)&&result.flag_explanations.length){result.flag_explanations.forEach(f=>append($("flags"),"div","flag",f));}
-  else append($("flags"),"p","fine","No matching pattern found. Scammers may use other wording.");
-  $("ai-checks").hidden=!(Array.isArray(result.ai_attention)&&result.ai_attention.length);
-  $("ai-signals").replaceChildren();
-  (result.ai_attention||[]).forEach(a=>{
-   const box=append($("ai-signals"),"div","flag","");
-   append(box,"strong","",a.kind+": ");
-   append(box,"span","","“"+a.snippet+"” — "+a.explanation);
-  });
-  $("caution").textContent=result.caution||"No authenticity verdict is available.";
-  $("steps").replaceChildren();(result.next_steps||[]).forEach(s=>append($("steps"),"li","",s));
-  $("inspection-panel").scrollIntoView({behavior:"smooth",block:"start"});
- }catch(e){$("flash").textContent="Inspection failed: "+e.message;}
- finally{btn.disabled=false;btn.textContent="Inspect claims ↗";}
+  const good=await inspect(samples.B,false);
+  if(!good){go("inspect");return;}
+  assessment=await post("/api/assess",{evidence:demoNotes});
+  evidence=demoNotes.map(x=>({...x}));renderGraph();renderNotes();
+  go("evidence");$("collapse-notice").focus();
+ }catch(e){go("evidence");$("evidence-message").textContent="Demo failed: "+e.message;}
+ finally{b.disabled=false;b.textContent="Run full evidence demo ↗";}
 });
 function renderGraph(){
- const g=$("graph");g.replaceChildren();const origin=append(g,"div","graphnode");
- append(origin,"div","nlabel","Origin");append(origin,"strong","","Recruiter message · unverified");
- append(origin,"p","","No claim has been independently authenticated.");
- if(evidence.length===0){
-  append(g,"p","graph-empty","Your source trail appears here after you add observations or load a fictional example.");
-  $("collapse-notice").className="notice";
-  $("collapse-notice").textContent="No observations yet. Try the fictional source-collapse example.";
-  $("evidence-summary").textContent="0 independent observations recorded. No sender authenticated.";return;
- }
- const collapsed=assessment?assessment.source_collapses:[];
- evidence.forEach((item,i)=>{
-  append(g,"div","connector",item.derived_from!==undefined?"↳ Derived from observation "+(item.derived_from+1):item.source==="independent"?"↳ Independently sourced (user reported)":"↳ From "+(item.source==="ai"?"AI suggestion":"recruiter message"));
-  const bad=collapsed.includes(i);
-  const box=append(g,"div","graphnode "+(bad?"collapse":"regular"));
-  append(box,"div","nlabel",bad?"SOURCE COLLAPSE":item.source==="independent"?"SELF-REPORTED SOURCE":"DEPENDENT SOURCE");
-  append(box,"strong","","Observation "+(i+1));
-  append(box,"p","",item.observation);
- });
- const count=assessment?assessment.accepted_evidence.length:0;
- $("evidence-summary").textContent=count+" independently sourced observation(s) reported · "+collapsed.length+" collapsed chain(s) · 0 authenticated senders.";
+ const data=assessment||{nodes:[],edges:[],source_collapses:[],accepted_evidence:[]};
+ window.OfferProofGraph.render($("graph"),data);
+ const collapsed=data.source_collapses||[];
+ $("evidence-summary").textContent=(data.accepted_evidence||[]).length+
+   " independently sourced observation(s) reported · "+collapsed.length+
+   " source collapse(s). No source or sender authenticated.";
  $("collapse-notice").className="notice"+(collapsed.length?" danger":"");
- $("collapse-notice").textContent=collapsed.length?"Source collapse detected. A record labeled independent actually depends on the original recruiter message or AI. It is not independent corroboration.":"No reported source collapse in this trail. Independently found pages can still be fake; sender remains unverified.";
+ $("collapse-notice").setAttribute("tabindex","-1");
+ $("collapse-notice").textContent=collapsed.length?
+  "Source collapse detected. The red node traces through one or more inputs controlled by the original sender or AI. This is NOT independent corroboration.":
+  evidence.length?"No reported circular dependency. Even an independently found page may be fake; sender is unverified.":
+  "No observations yet. Load the synthetic example to see real directed dependency edges.";
 }
 function renderNotes(){
  const ul=$("evidence-log");ul.replaceChildren();
  evidence.forEach((item,i)=>{
-  const bad=assessment&&assessment.source_collapses.includes(i);
-  const li=append(ul,"li",bad?"bad":"");
-  append(li,"strong","",bad?"Circular source detected":item.source==="independent"?"User-reported independent":"Dependent source");
+  const status=assessment?.nodes?.[i]?.classification||"unknown";
+  const li=append(ul,"li",status==="source_collapse"?"bad":"");
+  append(li,"strong","",status==="source_collapse"?"Source collapse · dependent":
+         status==="dependent"?"Dependent on untrusted origin":"Separately sourced (self-reported)");
   append(li,"span","",item.observation);
  });
- $("origin").replaceChildren(new Option("No earlier observation",""));
- evidence.forEach((item,i)=>$("origin").add(new Option("Observation "+(i+1)+" — "+item.observation.slice(0,32),String(i))));
- $("origin").value="";
+ const origins=$("origin-list");origins.replaceChildren();
+ if(!evidence.length){append(origins,"span","fine","No earlier observations");return;}
+ evidence.forEach((item,i)=>{
+  const wrapper=append(origins,"label","dependency-option");
+  const input=append(wrapper,"input");
+  input.type="checkbox";input.value=String(i);
+  append(wrapper,"span","","Observation "+(i+1)+" · "+item.observation.slice(0,46));
+ });
 }
 $("record").addEventListener("click",async()=>{
  if(evidence.length>=10){$("evidence-message").textContent="Maximum 10 observations per trail.";return;}
  const observation=$("observation").value.trim();
  if(!observation){$("evidence-message").textContent="Enter a short observation first.";return;}
  const item={kind:$("kind").value,source:$("source").value,observation};
- if($("origin").value!=="")item.derived_from=Number($("origin").value);
+ const parents=Array.from($("origin-list").querySelectorAll("input:checked"),c=>Number(c.value));
+ if(parents.length)item.derived_from=parents;
  const b=$("record");b.disabled=true;$("evidence-message").textContent="";
  try{assessment=await post("/api/assess",{evidence:evidence.concat(item)});evidence.push(item);renderGraph();renderNotes();$("observation").value="";}
  catch(e){$("evidence-message").textContent="Could not record: "+e.message;}
  finally{b.disabled=false;}
 });
 $("load-evidence-demo").addEventListener("click",async()=>{
- const demo=[
- {kind:"other",source:"message",observation:"The recruiter supplied a link supposedly showing the job."},
- {kind:"company_careers",source:"independent",derived_from:0,observation:"The careers page looked legitimate, but I arrived through that link."},
- {kind:"company_contact",source:"independent",observation:"I found a company contact channel using a route unrelated to the message."}
- ];
+ const demo=demoNotes;
  const b=$("load-evidence-demo");b.disabled=true;$("evidence-message").textContent="";
  try{assessment=await post("/api/assess",{evidence:demo});evidence=demo;renderGraph();renderNotes();}
  catch(e){$("evidence-message").textContent="Could not load sample: "+e.message;}
  finally{b.disabled=false;}
+});
+$("download-case").addEventListener("click",()=>{
+ const safe=x=>String(x||"").replace(/[\u0000-\u001f]+/g," ").trim();
+ const lines=["OFFERPROOF — INVESTIGATION NOTE",
+ "This is a user-reported evidence worksheet. Nothing below authenticates a sender.",
+ "Date: "+new Date().toISOString(),
+ "",
+ "Inspection mode: "+safe(latestInspection?.mode||"not performed"),
+ "Rule-based signals: "+safe((latestInspection?.red_flags||[]).join(", ")||"none listed"),
+ "AI cautions (hypotheses only):",
+ ...(latestInspection?.ai_attention||[]).map(a=>"- "+safe(a.kind)+" — "+safe(a.snippet)),
+ "",
+ "Claim excerpts (untrusted quotes):",
+ ...(latestInspection?.claims||[]).map(c=>"- "+safe(c.category)+": "+safe(c.snippet)),
+ "",
+ "Questions for independent checking:",
+ ...(latestInspection?.verification_questions||[]).map(q=>"- "+safe(q.question)),
+ "",
+ "Reported evidence:",
+ ...evidence.map((item,i)=>"- Observation "+(i+1)+": "+safe(item.observation)+
+   " | origin: "+safe(item.source)+" | dependencies: "+
+   (Array.isArray(item.derived_from)?item.derived_from.map(n=>n+1).join(","):item.derived_from!==undefined?item.derived_from+1:"none")+
+   " | classification: "+safe(assessment?.nodes?.[i]?.classification||"not assessed")),
+ "",
+ "CONCLUSION: Source authenticity and sender identity are NOT established.",
+ "Do not follow unverified contact details; find an independent company channel."
+ ];
+ const text=lines.join("\n"),blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="OfferProof-investigation.txt";document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
 });
 $("respond").addEventListener("click",async()=>{
  const events=Array.from(document.querySelectorAll(".event:checked"),e=>e.value);

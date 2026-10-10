@@ -1,6 +1,6 @@
 # OfferProof
 
-**A narrow, honest job-offer verification assistant for ForgeHacks 2026 (AI + Cybersecurity).**
+**A claim-and-evidence integrity investigation workspace for ForgeHacks 2026 (AI + Cybersecurity).**
 
 Students can paste a suspicious recruiting message. The app quotes claims from the message, marks common high-risk requests, records where a user's observations came from, and provides response steps if the student already shared a password, money, or documents. Every result stays **unverified**: a job listing does not authenticate a recruiter. Nothing in the message is fetched or visited.
 
@@ -17,6 +17,20 @@ Visit `http://127.0.0.1:8000`. On Windows use `py offerproof.py`. To enable AI c
 The redesigned browser experience now has four sections: **Overview, Inspect a message, Evidence lab, and Response center**. The interactive dependency map explicitly highlights source collapse. It is a guided single-page application with local CSS and JavaScript assets (`dashboard.css`, `dashboard.js`), not four separately deployed sites.
 
 The included `render.yaml` can create a Render Free web service from this repository. Connect the repository to a new Blueprint in Render, supply `GROQ_API_KEY` only in its environment-variable prompt, and verify `/health` reports `ai_configured: true`. This only confirms that a key is present; it does **not** test whether the key works, the model responds, or the account has remaining quota. Free services may spin down on idle and are subject to Render's current free-tier limits. Treat this public service as a controlled hackathon demonstration, not a production protection tool. Do not invite strangers to submit real personal messages without abuse controls and privacy review.
+
+## Evidence Engine v2 — what materially changed
+
+Open the homepage and choose **Run full evidence demo**. OfferProof analyzes a synthetic plausible recruiting message, then displays a four-note dependency graph. Two apparently corroborating notes trace to the original recruiter message, while a separately found contact remains *reported independent but not authenticated*. The graph is an actual directed acyclic graph with explicit edges and support for multiple source parents — not a sequential list styled as a graph.
+
+- **Source-bound AI:** Groq, when configured, quotes up to five source claims and suggests up to three tentative caution cues. Fixed claim-category missions tell users what could verify each claim independently. No model-suggested links, authenticity labels, or freeform verdicts are accepted as evidence.
+- **Structured provenance:** The server evaluates explicit parent dependencies and propagates untrusted sender/AI origins along all paths. The client renders the directed graph with SVG; manually reported origins remain self-reported.
+- **Usable output:** The browser exports an investigation report with observed red flags, quoted claims, verification missions, source dependencies, and explicit uncertainty. It intentionally excludes the full pasted message.
+- **False alarms:** Simple negation guards reduce obvious mistakes on phrases such as "we will never ask for a fee"; this is not general-language semantic comprehension.
+- **Verification:** Unit tests, JS syntax checks and Chromium desktop/mobile E2E run in CI. Browser E2E uses the disclosed rules-only fallback; real Groq integration must be verified separately on Render.
+
+**Limits:** OfferProof does not browse external URLs, authenticate websites, validate real employers, or verify the reported origins. A page found independently can still be counterfeit. No blinded efficacy study or outside-user comparison is claimed. Do not describe it as an autonomous fraud detective or calibrated scam score.
+
+See [Judge quickstart](docs/judges-quickstart.md) for the 75-second showcase.
 
 ## Demo in three cases
 
