@@ -208,9 +208,10 @@ class ReleaseChecks(unittest.TestCase):
 
     def test_frontend_assets_are_served_with_safe_mime_types(self):
         for path, content_type, marker in [
-            ("/", "text/html; charset=utf-8", b"Investigation Workspace"),
+            ("/", "text/html; charset=utf-8", b"Follow the Evidence"),
             ("/dashboard.css", "text/css; charset=utf-8", b".hero"),
             ("/dashboard.js", "text/javascript; charset=utf-8", b"renderGraph"),
+            ("/cinematic.js", "text/javascript; charset=utf-8", b"IntersectionObserver"),
         ]:
             with self.subTest(path=path):
                 status, headers, body = self.get(path)

@@ -214,6 +214,7 @@ class Handler(BaseHTTPRequestHandler):
             "/index.html": ("index.html", "text/html; charset=utf-8"),
             "/dashboard.css": ("dashboard.css", "text/css; charset=utf-8"),
             "/dashboard.js": ("dashboard.js", "text/javascript; charset=utf-8"),
+            "/cinematic.js": ("cinematic.js", "text/javascript; charset=utf-8"),
             "/source_graph.js": ("source_graph.js", "text/javascript; charset=utf-8"),
         }
         asset = assets.get(self.path)

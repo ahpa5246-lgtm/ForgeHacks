@@ -56,7 +56,7 @@ window.OfferProofGraph = (function () {
     };
     for(const n of data.nodes)points[n.id]={x:n.id%2?570:220,y:250+Math.floor(n.id/2)*176};
     // Draw all links behind nodes; this is not a fake linear connector list.
-    const edgeGroup=shape(svg,"g",{});
+    const edgeGroup=shape(svg,"g",{class:"graph-edges"});
     for(const e of data.edges) {
       const from=points[e.from],to=points[e.to];
       if(!from||!to)continue;
@@ -86,7 +86,8 @@ window.OfferProofGraph = (function () {
                    variant==="collapse"?[palette.collapse,palette.ink,palette.red]:
                    variant==="dependent"?[palette.dependent,palette.ink,"#996230"]:
                    [palette.independent,palette.ink,palette.green];
-      const group=shape(svg,"g",{});
+      const group=shape(svg,"g",{class:"graph-stage-node"});
+      group.style.animationDelay=(typeof key==="number"?Math.min(key,8)*85:0)+"ms";
       shape(group,"rect",{x:p.x-w/2,y:p.y-h/2,width:w,height:h,rx:11,fill:colors[0],
                             stroke:variant==="root"?"#57748e":colors[2],
                             "stroke-width":variant==="collapse"?2.3:1.1});
