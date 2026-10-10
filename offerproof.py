@@ -11,6 +11,7 @@ from time import monotonic
 from urllib.request import Request, urlopen
 from investigation import is_explicit_denial, bounded_model_signals, provenance_graph, quoted_questions
 from cross_review import review_case
+from discovery import message_source_seeds
 
 
 MAX_MESSAGE = 12000
@@ -118,6 +119,7 @@ def analyze(message, extractor=None):
         "claims": claims,
         "ai_attention": ai_attention,
         "verification_questions": quoted_questions(claims),
+        "message_source_seeds": message_source_seeds(message),
         "analysis_scope": "message_only_no_external_verification",
         "red_flags": flags,
         "flag_explanations": [FLAG_TEXT[name] for name in flags],
