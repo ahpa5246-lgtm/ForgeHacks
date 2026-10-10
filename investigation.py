@@ -37,7 +37,7 @@ def is_explicit_denial(text, start):
     """Recognize a nearby explicit denial, not arbitrary distant negations."""
     pre = text[max(0, start - 115):start]
     pre = re.split(r"(?<=[.;!?\n])", pre)[-1]
-    pre = _CONTRAST.split(pre)[-1]
+    pre = _CONTRAST.split(pre)[-1].rstrip()
     return bool(_DENIAL.search(pre))
 
 
