@@ -69,6 +69,11 @@ def run():
             page.locator("#compare-mode").wait_for(timeout=15000)
             assert "unavailable" in page.locator("#compare-mode").inner_text().lower()
             page.screenshot(path=str(ARTIFACTS / "desktop-ai-review-fallback.png"), full_page=True)
+            page.locator("#observation").fill("<img src=x onerror=alert(7)>")
+            page.locator("#record").click()
+            page.locator("#evidence-log").get_by_text("<img src=x onerror=alert(7)>", exact=False).wait_for(timeout=12000)
+            assert page.locator("#graph img").count() == 0
+            assert page.locator(".evidence-svg path").count() >= 4
             mobile = browser.new_page(viewport={"width": 390, "height": 844}, device_scale_factor=1)
             mobile.goto(f"http://127.0.0.1:{port}/", wait_until="networkidle", timeout=20000)
             assert mobile.locator("#overview-title").is_visible()
@@ -78,6 +83,11 @@ def run():
             mobile.locator(".nav button[data-view='inspect']").click()
             assert mobile.locator("#view-inspect").is_visible()
             assert mobile.locator("#message").is_visible()
+            mobile.locator(".nav button[data-view='evidence']").click()
+            mobile.locator("#load-evidence-demo").click()
+            mobile.locator(".evidence-svg path").first.wait_for(timeout=12000)
+            overflow = mobile.evaluate("document.documentElement.scrollWidth - window.innerWidth")
+            assert overflow <= 2, f"mobile evidence overflow: {overflow}px"
             browser.close()
         print("PASS: desktop overview, analysis, source collapse, recovery, mobile navigation and overflow")
     finally:
