@@ -94,7 +94,7 @@ class ComparisonTests(unittest.TestCase):
 
 class HttpComparisonTests(unittest.TestCase):
     def test_http_compare_contract_with_model_unavailable(self):
-        raw=json.dumps({"message":CASE,"evidence":NOTES}).encode()
+        raw=json.dumps({"message":CASE,"evidence":NOTES,"groq_consent":True}).encode()
         handler=Handler.__new__(Handler)
         handler.path="/api/compare"
         handler.client_address=("test-audience",123)

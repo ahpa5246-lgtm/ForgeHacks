@@ -16,7 +16,7 @@
 ## Pre-recording gate
 
 1. Check service is Live and new frontend files deploy: /dashboard.js, /source_graph.js, /health.
-2. Open fictional Plausible offer, inspect, confirm actual mode (AI or rules fallback). A key presence alone does not prove AI works.
+2. Open fictional Plausible offer, inspect in local-only mode first. To demonstrate AI, check the explicit Groq opt-in in Inspect and inspect again. Confirm actual AI mode. A key presence alone does not prove AI works.
 3. Load the full demo and make sure two red Source Collapse notes and one reported-independent note appear.
 4. Check comparison only after consenting; if AI is unavailable, **do not fake the result or say it ran**.
 5. Download the report once to confirm the browser gives a text file without raw private message.

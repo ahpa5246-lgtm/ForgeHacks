@@ -169,6 +169,17 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("upfront_payment", data["red_flags"])
 
+
+    def test_message_is_local_by_default_even_if_provider_key_exists(self):
+        with patch.dict("os.environ", {"GROQ_API_KEY": "test-secret"}), \
+             patch("offerproof.urlopen", side_effect=AssertionError("no network call")):
+            status, data = self.call("/api/analyze", {
+                "message": "Interview invitation from a fictional company"
+            })
+        self.assertEqual(status, 200)
+        self.assertFalse(data["external_ai_requested"])
+        self.assertEqual(data["mode"], "rules_fallback")
+
     def test_rejects_large_request(self):
         status, _ = self.call("/api/analyze", {"message": "a" * 51000})
         self.assertEqual(status, 413)

@@ -54,7 +54,9 @@ function showAnalysis(result){
  $("mode").className="mode"+(result.mode==="ai_extract"?"":" fallback");
  $("mode").textContent=result.mode==="ai_extract"?
     "● AI analysis active — source quotations and tentative cautions only.":
-    "● Rules-only fallback — model unconfigured, unavailable or invalid.";
+    result.external_ai_requested===false?
+    "● Private local-only inspection — the message was NOT sent to Groq.":
+    "● Rules-only fallback — AI was requested but unavailable or invalid.";
  $("claims").replaceChildren();
  if(Array.isArray(result.claims)&&result.claims.length){
   result.claims.forEach(c=>{
@@ -90,7 +92,7 @@ async function inspect(message,focus){
  const btn=$("analyze");btn.disabled=true;btn.textContent="Inspecting...";
  $("flash").textContent="";
  try{
-  const result=await post("/api/analyze",{message});
+  const result=await post("/api/analyze",{message,groq_consent:$("ai-consent").checked});
   showAnalysis(result);
   if(focus)$("inspection-panel").scrollIntoView({behavior:"smooth",block:"start"});
   return true;
@@ -185,7 +187,7 @@ $("compare-case").addEventListener("click",async()=>{
  }
  const b=$("compare-case");b.disabled=true;b.textContent="Comparing...";
  try{
-  const result=await post("/api/compare",{message:lastInspectedMessage,evidence});
+  const result=await post("/api/compare",{message:lastInspectedMessage,evidence,groq_consent:true});
   crossReview=result;$("compare-output").hidden=false;
   const active=result.mode==="ai_compare";
   $("compare-mode").className="mode"+(active?"":" fallback");
@@ -260,7 +262,7 @@ async function health(){
   const r=await fetch("/health",{cache:"no-store"});
   if(!r.ok)throw Error();
   const state=await r.json();
-  $("server-state").textContent=state.ai_configured?"AI key configured · test in inspection":"Rules-only · AI key not configured";
+  $("server-state").textContent=state.ai_configured?"Groq key present · opt-in required · not validated":"Local rules only · Groq key absent";
  }catch(_){$("server-state").textContent="Service status unknown";}
 }
 const selected=location.hash.slice(1);go(titles[selected]?selected:"overview");renderGraph();health();

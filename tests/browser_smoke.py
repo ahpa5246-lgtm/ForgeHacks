@@ -37,7 +37,7 @@ def run():
             page.locator("#analyze").click()
             page.locator("#result-title").wait_for(timeout=20000)
             assert "unverified" in page.locator("#result-title").inner_text().lower()
-            assert "fallback" in page.locator("#mode").inner_text().lower()
+            assert "local-only" in page.locator("#mode").inner_text().lower()
             page.screenshot(path=str(ARTIFACTS / "desktop-inspection.png"), full_page=True)
             page.locator("[data-go='evidence']").click()
             page.locator("#load-evidence-demo").click()
