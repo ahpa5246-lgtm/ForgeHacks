@@ -9,7 +9,7 @@ from collections import defaultdict, deque
 from threading import Lock
 from time import monotonic
 from urllib.request import Request, urlopen
-from investigation import is_explicit_denial, bounded_model_signals, provenance_graph, quoted_questions
+from investigation import is_explicit_denial, bounded_model_signals, provenance_graph, quoted_questions, safe_provider_failure
 from cross_review import review_case
 from discovery import message_source_seeds
 
@@ -91,6 +91,7 @@ def analyze(message, extractor=None):
     mode = "rules_fallback"
     claims = []
     ai_attention = []
+    ai_failure_reason = None
     if extractor is None:
         extractor = groq_extract
     try:
@@ -108,14 +109,16 @@ def analyze(message, extractor=None):
                     claims.append({"snippet": snippet, "category": category})
             ai_attention = bounded_model_signals(message, extracted.get("signals", []))
             mode = "ai_extract"  # AI findings remain tentative, never authentication.
-    except Exception:
-        # Provider errors must not expose request content, keys or a false verdict.
+    except Exception as error:
+        # Safe diagnostics: response status only, no credentials or message text.
+        ai_failure_reason = safe_provider_failure(error)
         mode = "rules_fallback"
     return {
         "status": "red_flag_observed" if flags else "unverified",
         "verified": False,
         "contact_policy": "do_not_trust_message_or_ai_contacts",
         "mode": mode,
+        "ai_failure_reason": ai_failure_reason,
         "claims": claims,
         "ai_attention": ai_attention,
         "verification_questions": quoted_questions(claims),
