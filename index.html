@@ -57,10 +57,10 @@
 <section class="view" id="view-inspect" hidden aria-labelledby="inspect-title"><div class="chapter-cover"><div class="chapter-cover-left"><span class="cover-index">CHAPTER 01 / THE INVESTIGATION</span><span class="cover-name">THE MESSAGE</span></div><span class="cover-symbol" aria-hidden="true">01</span><p>Separate the claims from the facts.</p></div>
 <div class="pagehead"><span class="eyebrow">01 / THE FIRST LEAD</span><h1 id="inspect-title">Inspect the message.</h1><p>Separate what the sender says from what is actually known. A handful of warning patterns may be highlighted, but even a message with no flags remains unverified.</p></div>
 <div class="cols">
-<section class="card"><div class="cardhead"><div><span class="eyebrow">Input</span><h2>Recruiter message</h2></div><span class="step">01</span></div><p class="hint">Choose a fictional sample or paste a message after removing names, passwords, account numbers and personal information. If AI is enabled, the message is sent to Groq.</p>
+<section class="card"><div class="cardhead"><div><span class="eyebrow">Input</span><h2>Recruiter message</h2></div><span class="step">01</span></div><p class="hint">Choose a fictional sample or paste a message after removing names, passwords, account numbers and personal information. With your permission, AI text is sent to the configured external provider.</p>
 <label class="field" for="message">Message text</label><textarea id="message" maxlength="12000" placeholder="Paste the job offer message here..."></textarea><div class="form-meta"><span>Avoid personal data</span><span id="count">0 / 12000</span></div>
 <div class="samples"><button class="sample" data-sample="A" type="button">Payment request</button><button class="sample" data-sample="B" type="button">Plausible offer</button><button class="sample" data-sample="C" type="button">Identity request</button></div>
-<label class="option ai-optin"><input type="checkbox" id="ai-consent"> Enable AI claim analysis — this sends the text to Groq. Leave unchecked for local-only inspection.</label>
+<label class="option ai-optin"><input type="checkbox" id="ai-consent"> Enable AI claim analysis — sends text to Google Gemini (or the configured provider). Leave unchecked for local-only inspection.</label>
 <div class="actions"><button class="btn primary" id="analyze" type="button">Inspect claims ↗</button><span>Results never certify safety.</span></div><p id="flash" class="feedback" role="alert"></p></section>
 <section class="card" id="inspection-panel"><div class="cardhead"><div><span class="eyebrow">Output</span><h2>Inspection record</h2></div><span class="step">02</span></div>
 <div id="inspect-empty" class="empty"><div class="icon">⌕</div><strong>Waiting for a message</strong><p>Inspect a fictional scenario to reveal claim excerpts, known warning signals and suggested next actions.</p></div>
@@ -81,7 +81,7 @@
 <div class="actions"><button class="btn primary" type="button" id="record">Record observation +</button><span>Maximum 10 notes</span></div><p id="evidence-message" class="feedback" role="alert"></p><ul id="evidence-log" class="notes"></ul>
 <div class="cross-review"><div class="eyebrow">Evidence Engine / AI review</div><h3>Challenge the evidence</h3>
 <p class="hint">Compare the currently inspected message against your reported observations. The model can identify possible textual disagreements, but cannot determine which source is true.</p>
-<label class="option"><input id="consent-review" type="checkbox"> I understand that the message and observation text will be sent to Groq if the AI key is enabled.</label>
+<label class="option"><input id="consent-review" type="checkbox"> I agree to send the fictional message and observation text to the configured external AI provider.</label>
 <button id="compare-case" class="btn primary" type="button">Compare claims &amp; observations ↗</button>
 <p id="compare-message" class="feedback" role="alert"></p>
 <div id="compare-output" hidden aria-live="polite"><div id="compare-mode" class="mode"></div><div id="comparison-list"></div></div></div>
