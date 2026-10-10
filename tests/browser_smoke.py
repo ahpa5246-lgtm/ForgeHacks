@@ -85,7 +85,7 @@ def run():
             assert mobile.locator("#message").is_visible()
             mobile.locator(".nav button[data-view='evidence']").click()
             mobile.locator("#load-evidence-demo").click()
-            mobile.locator(".evidence-svg path").first.wait_for(timeout=12000)
+            mobile.locator(".evidence-svg > g path").first.wait_for(state="attached", timeout=12000)
             overflow = mobile.evaluate("document.documentElement.scrollWidth - window.innerWidth")
             assert overflow <= 2, f"mobile evidence overflow: {overflow}px"
             browser.close()
