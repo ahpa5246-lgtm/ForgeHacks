@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id);
 const samples={
  A:"You have been selected for a remote data entry job at Northstar Labs. Pay a $29 training deposit tonight through this link to reserve your position.",
- B:"Hello, I am a recruiter for Harbor Systems. We invite you to interview for a Software Engineering internship starting July 1. Please reply if interested.",
+ B:"Hello, I am a recruiter for Harbor Systems. We invite you to interview for a Software Engineering internship starting July 1. See https://jobs.harborsystems.example/roles/421 for details, then reply if interested.",
  C:"Your application has been approved. Send a passport scan and bank account details immediately before the interview."
 };
 const titles={overview:"Overview",inspect:"Inspect a message",evidence:"Evidence lab",response:"Response center"};
@@ -43,7 +43,7 @@ function resetEvidence(){
  $("compare-output").hidden=true;$("consent-review").checked=false;$("evidence-log").replaceChildren();$("origin-list").replaceChildren();
  $("observation").value="";$("evidence-message").textContent="";renderGraph();
 }
-function showAnalysis(result){
+async function showAnalysis(result){
  latestInspection=result;lastInspectedMessage=$("message").value.trim();resetEvidence();$("inspect-empty").hidden=true;$("results").hidden=false;
  const risky=result.status==="red_flag_observed";
  $("result-status").className="status"+(risky?" alert":"");
@@ -87,13 +87,21 @@ function showAnalysis(result){
  });
  $("steps").replaceChildren();
  (result.next_steps||[]).forEach(s=>append($("steps"),"li","",s));
+ const seeds=Array.isArray(result.message_source_seeds)?result.message_source_seeds:[];
+ if(seeds.length){
+  try{
+   assessment=await post("/api/assess",{evidence:seeds});
+   evidence=seeds;renderGraph();renderNotes();
+   $("evidence-summary").textContent += " Sender-supplied domain hosts were seeded without contacting them.";
+  }catch(e){$("evidence-message").textContent="Could not seed sender links: "+e.message;}
+ }
 }
 async function inspect(message,focus){
  const btn=$("analyze");btn.disabled=true;btn.textContent="Inspecting...";
  $("flash").textContent="";
  try{
   const result=await post("/api/analyze",{message,groq_consent:$("ai-consent").checked});
-  showAnalysis(result);
+  await showAnalysis(result);
   if(focus)$("inspection-panel").scrollIntoView({behavior:"smooth",block:"start"});
   return true;
  }catch(e){$("flash").textContent="Inspection failed: "+e.message;return false;}
