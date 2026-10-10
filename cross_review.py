@@ -50,6 +50,9 @@ def groq_compare(message, notes):
             }, ensure_ascii=False)},
         ],
     }
+    if payload["model"] == "qwen/qwen3.8-27b":
+        payload.update({"temperature": 0.7, "reasoning_effort": "none",
+                        "reasoning_format": "hidden"})
     request = Request(
         "https://api.groq.com/openai/v1/chat/completions",
         data=json.dumps(payload).encode("utf-8"),
