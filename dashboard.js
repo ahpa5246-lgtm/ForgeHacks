@@ -200,7 +200,7 @@ $("compare-case").addEventListener("click",async()=>{
     append(card,"div","question-quote","Message: “"+item.claim_quote+"”");
     append(card,"div","question-quote","Observation "+(item.note_index+1)+": “"+item.note_quote+"”");
     append(card,"p","",item.question);
-    append(card,"span","fine","","Source status: "+item.note_classification+
+    append(card,"span","fine","Source status: "+item.note_classification+
       ". This is an unverified comparison, not an authenticity finding.");
    });
   }else append($("comparison-list"),"p","fine",active?
