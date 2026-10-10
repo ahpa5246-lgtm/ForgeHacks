@@ -31,6 +31,13 @@ def run():
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.goto(f"http://127.0.0.1:{port}/", wait_until="networkidle", timeout=20000)
             assert page.locator("#overview-title").is_visible()
+            assert page.locator(".chapter").count() == 3
+            assert page.locator(".scene-card").count() == 3
+            assert page.locator("#story-demo").is_visible()
+            assert page.locator(".hero").bounding_box()["height"] > 500
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 2")
+            assert page.locator(".nav button[data-view='inspect']").get_attribute("aria-label") == "Inspect a message"
+
             page.screenshot(path=str(ARTIFACTS / "desktop-overview.png"), full_page=True)
             page.locator(".case").nth(1).click()
             assert page.locator("#view-inspect").is_visible()
@@ -77,9 +84,14 @@ def run():
             mobile = browser.new_page(viewport={"width": 390, "height": 844}, device_scale_factor=1)
             mobile.goto(f"http://127.0.0.1:{port}/", wait_until="networkidle", timeout=20000)
             assert mobile.locator("#overview-title").is_visible()
+            assert mobile.locator(".hero").is_visible()
+            assert mobile.locator(".chapter").count() == 3
+            assert mobile.locator(".scene-card").count() == 3
+
             overflow = mobile.evaluate("document.documentElement.scrollWidth - window.innerWidth")
             assert overflow <= 2, f"mobile horizontal overflow: {overflow}px"
             mobile.screenshot(path=str(ARTIFACTS / "mobile-overview.png"), full_page=True)
+            assert mobile.locator("#run-demo").is_visible()
             mobile.locator(".nav button[data-view='inspect']").click()
             assert mobile.locator("#view-inspect").is_visible()
             assert mobile.locator("#message").is_visible()
