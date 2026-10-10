@@ -43,8 +43,12 @@ def run():
             page.locator("#load-evidence-demo").click()
             page.get_by_text("Source collapse detected.", exact=False).wait_for(timeout=10000)
             assert "Source collapse detected" in page.locator("#collapse-notice").inner_text()
-            assert page.locator(".graphnode.collapse").count() == 1
+            assert page.locator(".evidence-svg path").count() >= 3
+            assert page.locator(".evidence-svg text").count() >= 8
             page.screenshot(path=str(ARTIFACTS / "desktop-evidence.png"), full_page=True)
+            with page.expect_download() as download_info:
+                page.locator("#download-case").click()
+            assert download_info.value.suggested_filename == "OfferProof-investigation.txt"
             page.locator(".nav button[data-view='response']").click()
             page.locator("input[value='shared_password']").check()
             page.locator("#respond").click()
@@ -52,6 +56,10 @@ def run():
             assert "password" in page.locator("#response-steps").inner_text().lower()
             page.screenshot(path=str(ARTIFACTS / "desktop-response.png"), full_page=True)
             assert not errors, errors
+            page.locator(".nav button[data-view='overview']").click()
+            page.locator("#run-demo").click()
+            page.get_by_text("Source collapse detected.", exact=False).wait_for(timeout=15000)
+            assert page.locator(".evidence-svg path").count() >= 4
             mobile = browser.new_page(viewport={"width": 390, "height": 844}, device_scale_factor=1)
             mobile.goto(f"http://127.0.0.1:{port}/", wait_until="networkidle", timeout=20000)
             assert mobile.locator("#overview-title").is_visible()
