@@ -3,11 +3,11 @@
 const $=id=>document.getElementById(id);
 const samples={
  A:"You have been selected for a remote data entry job at Northstar Labs. Pay a $29 training deposit tonight through this link to reserve your position.",
- B:"Hello, I am a recruiter for Harbor Systems. We invite you to interview for an internship next week. Reply if interested.",
+ B:"Hello, I am a recruiter for Harbor Systems. We invite you to interview for a Software Engineering internship starting July 1. Please reply if interested.",
  C:"Your application has been approved. Send a passport scan and bank account details immediately before the interview."
 };
 const titles={overview:"Overview",inspect:"Inspect a message",evidence:"Evidence lab",response:"Response center"};
-let evidence=[],assessment=null,latestInspection=null;
+let evidence=[],assessment=null,latestInspection=null,crossReview=null,lastInspectedMessage="";
 function el(tag,cls,str){const x=document.createElement(tag);if(cls)x.className=cls;if(str!==undefined)x.textContent=str;return x;}
 function append(target,tag,cls,str){const x=el(tag,cls,str);target.appendChild(x);return x;}
 function go(view){
@@ -39,11 +39,12 @@ async function post(path,payload){
  finally{clearTimeout(timeout);}
 }
 function resetEvidence(){
- evidence=[];assessment=null;$("evidence-log").replaceChildren();$("origin-list").replaceChildren();
+ evidence=[];assessment=null;crossReview=null;
+ $("compare-output").hidden=true;$("consent-review").checked=false;$("evidence-log").replaceChildren();$("origin-list").replaceChildren();
  $("observation").value="";$("evidence-message").textContent="";renderGraph();
 }
 function showAnalysis(result){
- latestInspection=result;resetEvidence();$("inspect-empty").hidden=true;$("results").hidden=false;
+ latestInspection=result;lastInspectedMessage=$("message").value.trim();resetEvidence();$("inspect-empty").hidden=true;$("results").hidden=false;
  const risky=result.status==="red_flag_observed";
  $("result-status").className="status"+(risky?" alert":"");
  $("result-title").textContent=risky?"Known warning signals detected":
@@ -104,7 +105,7 @@ $("analyze").addEventListener("click",async()=>{
 const demoNotes=[
  {kind:"other",source:"message",observation:"The recruiter supplied a link claiming to display this vacancy."},
  {kind:"company_careers",source:"independent",derived_from:[0],observation:"A polished vacancies page appears, but it was reached from that recruiter's link."},
- {kind:"company_contact",source:"independent",observation:"A separate company contact channel found without the recruiter's links."},
+ {kind:"company_contact",source:"independent",observation:"A separately located company channel described a Data Analyst internship beginning in August, unlike the stated Software Engineering internship."},
  {kind:"other",source:"independent",derived_from:[1,2],observation:"A comparison note mixing the recruiter-linked page and separately located channel."}
 ];
 $("run-demo").addEventListener("click",async()=>{
@@ -159,16 +160,54 @@ $("record").addEventListener("click",async()=>{
  const parents=Array.from($("origin-list").querySelectorAll("input:checked"),c=>Number(c.value));
  if(parents.length)item.derived_from=parents;
  const b=$("record");b.disabled=true;$("evidence-message").textContent="";
- try{assessment=await post("/api/assess",{evidence:evidence.concat(item)});evidence.push(item);renderGraph();renderNotes();$("observation").value="";}
+ try{assessment=await post("/api/assess",{evidence:evidence.concat(item)});evidence.push(item);crossReview=null;$("compare-output").hidden=true;renderGraph();renderNotes();$("observation").value="";}
  catch(e){$("evidence-message").textContent="Could not record: "+e.message;}
  finally{b.disabled=false;}
 });
 $("load-evidence-demo").addEventListener("click",async()=>{
  const demo=demoNotes;
  const b=$("load-evidence-demo");b.disabled=true;$("evidence-message").textContent="";
- try{assessment=await post("/api/assess",{evidence:demo});evidence=demo;renderGraph();renderNotes();}
+ try{assessment=await post("/api/assess",{evidence:demo});evidence=demo;crossReview=null;$("compare-output").hidden=true;renderGraph();renderNotes();}
  catch(e){$("evidence-message").textContent="Could not load sample: "+e.message;}
  finally{b.disabled=false;}
+});
+$("compare-case").addEventListener("click",async()=>{
+ $("compare-message").textContent="";
+ if(!$("consent-review").checked){
+  $("compare-message").textContent="Confirm that you understand the external-AI data-sharing notice.";return;
+ }
+ if(!latestInspection || !$("message").value.trim() ||
+    $("message").value.trim()!==lastInspectedMessage){
+  $("compare-message").textContent="Inspect the current message first to link the evidence to this case.";return;
+ }
+ if(!evidence.length){
+  $("compare-message").textContent="Add at least one user-reported observation before comparing.";return;
+ }
+ const b=$("compare-case");b.disabled=true;b.textContent="Comparing...";
+ try{
+  const result=await post("/api/compare",{message:lastInspectedMessage,evidence});
+  crossReview=result;$("compare-output").hidden=false;
+  const active=result.mode==="ai_compare";
+  $("compare-mode").className="mode"+(active?"":" fallback");
+  $("compare-mode").textContent=active?
+   "● AI compared the two user-supplied text sets. All findings are hypotheses.":
+   "● AI unavailable or invalid: no semantic comparison was completed.";
+  $("comparison-list").replaceChildren();
+  if(active && result.comparisons.length){
+   result.comparisons.forEach((item,i)=>{
+    const card=append($("comparison-list"),"div","comparison-card");
+    append(card,"strong","","POSSIBLE DISCREPANCY "+(i+1)+" · "+item.kind);
+    append(card,"div","question-quote","Message: “"+item.claim_quote+"”");
+    append(card,"div","question-quote","Observation "+(item.note_index+1)+": “"+item.note_quote+"”");
+    append(card,"p","",item.question);
+    append(card,"span","fine","","Source status: "+item.note_classification+
+      ". This is an unverified comparison, not an authenticity finding.");
+   });
+  }else append($("comparison-list"),"p","fine",active?
+   "No quote-grounded textual discrepancy returned. This does not indicate authenticity.":
+   "The graph remains available without AI; no model findings were produced.");
+ }catch(e){$("compare-message").textContent="Comparison unavailable: "+e.message;}
+ finally{b.disabled=false;b.textContent="Compare claims & observations ↗";}
 });
 $("download-case").addEventListener("click",()=>{
  const safe=x=>String(x||"").replace(/[\u0000-\u001f]+/g," ").trim();
@@ -183,6 +222,11 @@ $("download-case").addEventListener("click",()=>{
  "",
  "Claim excerpts (untrusted quotes):",
  ...(latestInspection?.claims||[]).map(c=>"- "+safe(c.category)+": "+safe(c.snippet)),
+ "",
+ "AI comparisons (unverified hypotheses):",
+ ...(crossReview?.comparisons||[]).map(item=>"- "+safe(item.kind)+": "+
+    safe(item.claim_quote)+" <> "+safe(item.note_quote)+
+    " | provenance "+safe(item.note_classification)),
  "",
  "Questions for independent checking:",
  ...(latestInspection?.verification_questions||[]).map(q=>"- "+safe(q.question)),
