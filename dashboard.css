@@ -583,3 +583,17 @@ textarea:focus,input:focus,select:focus{box-shadow:0 0 0 4px #72b69b2b;outline:n
  .chapter-transition span{font-size:17px;text-align:center}
  .hero-sample{font-size:9px}
 }
+
+/* Keep every part of the long story visible in full-page capture / print,
+   even before it reaches the scroll-triggered reveal boundary. */
+.js-motion [data-reveal]:not(.visible){opacity:.93;transform:translateY(16px);filter:none}
+.js-motion .chapter:not(.visible) .chapter-copy h3{opacity:1;transform:translateY(8px)}
+.js-motion .chapter:not(.visible) .chapter-visual-frame{transform:scale(.98)}
+@media print{
+ .sidebar,.reading-progress,.chapter-transition,.film-glow{display:none!important}
+ .content{max-width:none;padding:0}
+ .view[hidden]{display:none!important}
+ .js-motion [data-reveal],.chapter-copy h3{opacity:1!important;transform:none!important;filter:none!important}
+ .hero{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ .chapter{break-inside:avoid}
+}
