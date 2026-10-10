@@ -40,6 +40,8 @@ def run():
             assert "local-only" in page.locator("#mode").inner_text().lower()
             page.screenshot(path=str(ARTIFACTS / "desktop-inspection.png"), full_page=True)
             page.locator("[data-go='evidence']").click()
+            assert "jobs.harborsystems.example" in page.locator("#evidence-log").inner_text()
+            assert "not visited" in page.locator("#evidence-log").inner_text()
             page.locator("#load-evidence-demo").click()
             page.get_by_text("Source collapse detected.", exact=False).wait_for(timeout=10000)
             assert "Source collapse detected" in page.locator("#collapse-notice").inner_text()
