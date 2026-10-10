@@ -10,6 +10,7 @@ from threading import Lock
 from time import monotonic
 from urllib.request import Request, urlopen
 from investigation import is_explicit_denial, bounded_model_signals, provenance_graph, quoted_questions
+from cross_review import review_case
 
 
 MAX_MESSAGE = 12000
@@ -218,9 +219,9 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_POST(self):
-        if self.path not in ("/api/analyze", "/api/assess", "/api/respond"):
+        if self.path not in ("/api/analyze", "/api/assess", "/api/respond", "/api/compare"):
             return self.send_json(404, {"error": "Not found"})
-        if self.path == "/api/analyze" and not allow_demo_call(getattr(self, "client_address", ("local-test",))[0]):
+        if self.path in ("/api/analyze", "/api/compare") and not allow_demo_call(getattr(self, "client_address", ("local-test",))[0]):
             return self.send_json(429, {"error": "Demo request limit reached. Please retry later."})
         try:
             length = int(self.headers.get("Content-Length", "0"))
@@ -233,6 +234,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, assess_evidence(payload.get("evidence")))
             if self.path == "/api/respond":
                 return self.send_json(200, {"steps": response_steps(payload.get("events"))})
+            if self.path == "/api/compare":
+                return self.send_json(200, review_case(payload.get("message"), payload.get("evidence")))
             return self.send_json(200, analyze(payload.get("message")))
         except (ValueError, UnicodeError, TypeError):
             return self.send_json(400, {"error": "Enter a message of at most 12000 characters"})
