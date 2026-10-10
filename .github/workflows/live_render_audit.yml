@@ -1,0 +1,26 @@
+name: External Render live audit
+on:
+  push:
+    branches: [live-render-audit-20261010]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install playwright==1.56.0
+      - run: python -m playwright install chromium --with-deps
+      - name: Validate deployed site with synthetic data (max 2 AI requests)
+        run: python -u tests/live_render_audit.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: render-real-browser-screenshots
+          path: artifacts/live-render/
+          if-no-files-found: ignore
