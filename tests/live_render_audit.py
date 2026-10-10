@@ -93,6 +93,9 @@ def main():
         status,headers,body=req(path,timeout=65)
         require(status==200 and token in body.decode("utf-8"),
                 path+" is stale or missing")
+        if path=="/dashboard.js":
+            require("ai_failure_reason" in body.decode("utf-8"),
+                    "Render has not deployed the current Groq diagnostics release yet")
     status,_,_=req("/.env",timeout=65)
     require(status==404,"Sensitive file route was not blocked")
 
@@ -133,7 +136,7 @@ def main():
                           {"message":MSG,"groq_consent":True},timeout=80)
         require(status==200,"Consented AI analyze request failed at HTTP level")
         result=decoded(raw)
-        print("LIVE_GROQ_ANALYSIS",result.get("mode"),
+        print("LIVE_GROQ_ANALYSIS",result.get("mode"),"failure_reason",result.get("ai_failure_reason"),
               "claim_count",len(result.get("claims",[])),
               "attention_count",len(result.get("ai_attention",[])),
               "verified",result.get("verified"),flush=True)
@@ -194,7 +197,7 @@ def main():
         mobile.screenshot(path=str(SHOTS/"05-mobile-overview.png"),full_page=True)
         mobile.locator(".nav button[data-view='evidence']").click()
         mobile.locator("#load-evidence-demo").click()
-        mobile.locator(".evidence-svg > g path").first.wait_for(timeout=20000)
+        mobile.locator(".evidence-svg > g path").first.wait_for(state="attached",timeout=20000)
         overflow=mobile.evaluate(
             "document.documentElement.scrollWidth - window.innerWidth")
         require(overflow<=2,f"Mobile evidence page horizontal overflow: {overflow}px")
