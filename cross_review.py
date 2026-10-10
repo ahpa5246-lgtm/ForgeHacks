@@ -8,6 +8,7 @@ import os
 from urllib.request import Request, urlopen
 
 from investigation import provenance_graph, safe_provider_failure
+from provider import provider_connection, prepare_json_request
 
 KINDS = {
     "employer_mismatch": "The organization named in the two excerpts may not match.",
@@ -21,11 +22,11 @@ KINDS = {
 
 def groq_compare(message, notes):
     """Use one constrained model request; everything returned remains untrusted."""
-    key = os.environ.get("GROQ_API_KEY")
-    if not key:
+    config = provider_connection()
+    if not config:
         return None
     payload = {
-        "model": os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b"),
+        "model": config["model"],
         "temperature": 0,
         "max_tokens": 750,
         "response_format": {"type": "json_object"},
@@ -50,13 +51,12 @@ def groq_compare(message, notes):
             }, ensure_ascii=False)},
         ],
     }
-    if payload["model"] == "qwen/qwen3.8-27b":
-        payload.update({"temperature": 0.7, "reasoning_effort": "none",
-                        "reasoning_format": "hidden"})
+    prepare_json_request(payload, config)
     request = Request(
-        "https://api.groq.com/openai/v1/chat/completions",
+        config["url"],
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"},
+        headers={"Authorization":"Bearer "+config["key"],
+                 "Content-Type":"application/json"},
         method="POST",
     )
     with urlopen(request, timeout=15) as response:

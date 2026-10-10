@@ -270,7 +270,7 @@ async function health(){
   const r=await fetch("/health",{cache:"no-store"});
   if(!r.ok)throw Error();
   const state=await r.json();
-  $("server-state").textContent=state.ai_configured?"Groq key present · opt-in required · not validated":"Local rules only · Groq key absent";
+  $("server-state").textContent=state.ai_configured?(state.ai_provider==="gemini"?"Google Gemini key present · opt-in required":"Groq key present · opt-in required"):"Local rules only · no AI key";
  }catch(_){$("server-state").textContent="Service status unknown";}
 }
 const selected=location.hash.slice(1);go(titles[selected]?selected:"overview");renderGraph();health();
