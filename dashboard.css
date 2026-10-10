@@ -55,3 +55,14 @@
 #run-demo{background:#d8efe9;color:#102c33;border-color:#d8efe9}
 #run-demo:hover{background:#c7e9df}
 @media(max-width:760px){.evidence-tools .btn{width:100%}.graph{max-height:490px}.graph-legend{font-size:10px}}
+
+/* Context-sensitive AI comparison: intentionally subordinate to provenance proof */
+.cross-review{border-top:1px solid var(--line);padding-top:21px;margin-top:26px}
+.cross-review h3{margin:5px 0 10px;font-size:19px}
+.cross-review .option{font-weight:560;margin:15px 0;font-size:12px;line-height:1.6}
+.comparison-card{padding:14px 15px;margin:11px 0;border-radius:10px;
+ border:1px solid #d9e8e6;background:#f7fbfa;overflow-wrap:anywhere}
+.comparison-card strong{font-size:10px;letter-spacing:.09em;color:#157b72}
+.comparison-card .question-quote{font-size:12px;font-weight:730;margin:9px 0 5px}
+.comparison-card p{font-size:12px;color:#5e6f7c;line-height:1.6;margin:10px 0}
+.comparison-card .fine{display:block;margin-top:10px;border-top:1px solid #dcebe6;padding-top:9px}
