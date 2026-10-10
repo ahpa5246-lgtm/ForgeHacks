@@ -262,7 +262,9 @@ def make_server(host="127.0.0.1", port=8000):
 
 
 if __name__ == "__main__":
-    host = os.environ.get("HOST", "127.0.0.1")
+    # Render routes to the public network interface; localhost-only binds
+    # cause the deploy to time out when HOST is absent from Environment.
+    host = os.environ.get("HOST") or "0.0.0.0"
     port = int(os.environ.get("PORT", "8000"))
     print(f"OfferProof listening on http://{host}:{port}", flush=True)
     make_server(host, port).serve_forever()
