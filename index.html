@@ -55,6 +55,12 @@
 <fieldset class="full source-dependencies"><legend>Which previous observations led you here?</legend><div class="fine">Select every relevant dependency. Leave empty if you found this source separately.</div><div id="origin-list" class="dependency-list"><span class="fine">No previous observations</span></div></fieldset>
 <div class="full"><label class="field" for="observation">What did you see? (No private details)</label><input type="text" id="observation" maxlength="300" placeholder="A role appears on the careers page"></div></div>
 <div class="actions"><button class="btn primary" type="button" id="record">Record observation +</button><span>Maximum 10 notes</span></div><p id="evidence-message" class="feedback" role="alert"></p><ul id="evidence-log" class="notes"></ul>
+<div class="cross-review"><div class="eyebrow">Evidence Engine / AI review</div><h3>Challenge the evidence</h3>
+<p class="hint">Compare the currently inspected message against your reported observations. The model can identify possible textual disagreements, but cannot determine which source is true.</p>
+<label class="option"><input id="consent-review" type="checkbox"> I understand that the message and observation text will be sent to Groq if the AI key is enabled.</label>
+<button id="compare-case" class="btn primary" type="button">Compare claims &amp; observations ↗</button>
+<p id="compare-message" class="feedback" role="alert"></p>
+<div id="compare-output" hidden aria-live="polite"><div id="compare-mode" class="mode"></div><div id="comparison-list"></div></div></div>
 <div class="trustbox"><strong>Question that remains</strong>Does a trusted, independently found company channel confirm this specific sender? A matching listing alone is not proof.</div></section></div>
 </section>
 <section class="view" id="view-response" hidden aria-labelledby="response-title">
