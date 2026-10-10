@@ -597,3 +597,8 @@ textarea:focus,input:focus,select:focus{box-shadow:0 0 0 4px #72b69b2b;outline:n
  .hero{print-color-adjust:exact;-webkit-print-color-adjust:exact}
  .chapter{break-inside:avoid}
 }
+
+/* Reconcile legacy narrow-sidebar rules with the new horizontal header. */
+@media(min-width:621px){.logo .logotext{display:inline}}
+@media(min-width:980px){.nav .navtext{display:inline}}
+@media(min-width:621px) and (max-width:979px){.nav button{min-width:43px;justify-content:center}.nav .navtext{display:none}}
