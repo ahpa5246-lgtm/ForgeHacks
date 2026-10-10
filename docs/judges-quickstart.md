@@ -15,6 +15,10 @@
 | 53–62 s | Click **Export investigation report** | The browser generates a local report with exact source dependencies and missing proof; original message text is excluded |
 | 62–75 s | Visit Inspect and show claim-specific verification missions | AI quotes claims; fixed missions ask how to independently verify them. No fake safety score |
 
+## Optional AI comparison add-on (only if live Groq is working)
+
+After the source-collapse map, tick the explicit Groq data-sharing consent and click **Compare claims & observations**. The cross-evidence route asks AI to identify possible discrepancies between exact excerpts in the message and your notes. If output is produced, show the exact quote pairs and note-provenance label. If the model returns no output or falls back, do not stage a fake result; show the working graph and explain that semantic comparison is unavailable.
+
 ## Distinguishing responsibilities
 
 1. **AI** (only if active): bounded exact claim extraction and tentative context cues; never the trust authority.
