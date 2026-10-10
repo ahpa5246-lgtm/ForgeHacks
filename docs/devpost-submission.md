@@ -15,7 +15,7 @@ Most simple job-scam checklists focus on individual warning signs such as upfron
 **OfferProof** is a guided evidence-integrity investigation prototype. Users can inspect the claims within a recruiting message, investigate where supporting observations originated, and produce a small evidence report without pretending they know a sender's identity.
 
 It includes:
-- **Bounded AI inspection:** Groq extracts exact message excerpts and tentative contextual caution signals. Server-side filtering drops invented excerpts and model-supplied contacts or verdicts.
+- **Bounded AI inspection:** Groq, only after an explicit opt-in, extracts exact message excerpts and tentative contextual caution signals. Without consent, the message remains in the local-rules workflow. Server-side filtering drops invented excerpts and model-supplied contacts or verdicts.
 - **Claim verification missions:** Each extracted claim maps to a concrete question the user could check through independently found employer channels.
 - **Evidence Engine:** The user records observation origins and dependency relationships. A real directed graph propagates dependencies through multiple parent notes and highlights *source collapse*: a purportedly independent item that ultimately descends from the original message or AI output.
 - **Cross-evidence AI review:** With explicit consent, Groq can suggest textually grounded discrepancies between message excerpts and reported observations. Each hypothesis includes two exact quotes, its note's provenance classification, and an uncertainty label.
