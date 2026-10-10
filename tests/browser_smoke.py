@@ -60,6 +60,13 @@ def run():
             page.locator("#run-demo").click()
             page.get_by_text("Source collapse detected.", exact=False).wait_for(timeout=15000)
             assert page.locator(".evidence-svg path").count() >= 4
+            page.locator("#compare-case").click()
+            assert "Confirm" in page.locator("#compare-message").inner_text()
+            page.locator("#consent-review").check()
+            page.locator("#compare-case").click()
+            page.locator("#compare-mode").wait_for(timeout=15000)
+            assert "unavailable" in page.locator("#compare-mode").inner_text().lower()
+            page.screenshot(path=str(ARTIFACTS / "desktop-ai-review-fallback.png"), full_page=True)
             mobile = browser.new_page(viewport={"width": 390, "height": 844}, device_scale_factor=1)
             mobile.goto(f"http://127.0.0.1:{port}/", wait_until="networkidle", timeout=20000)
             assert mobile.locator("#overview-title").is_visible()
