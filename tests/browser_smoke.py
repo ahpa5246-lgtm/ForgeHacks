@@ -38,6 +38,9 @@ def run():
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 2")
             assert page.locator(".nav button[data-view='inspect']").get_attribute("aria-label") == "Inspect a message"
 
+            # Full-page screenshots should include all chapters even before scrolling.
+            assert page.locator(".chapter").first.evaluate(
+                "el => Number(getComputedStyle(el).opacity)") >= 0.9
             page.screenshot(path=str(ARTIFACTS / "desktop-overview.png"), full_page=True)
             page.locator(".case").nth(1).click()
             assert page.locator("#view-inspect").is_visible()
@@ -45,6 +48,7 @@ def run():
             page.locator("#result-title").wait_for(timeout=20000)
             assert "unverified" in page.locator("#result-title").inner_text().lower()
             assert "local-only" in page.locator("#mode").inner_text().lower()
+            page.wait_for_timeout(800)
             page.screenshot(path=str(ARTIFACTS / "desktop-inspection.png"), full_page=True)
             page.locator("[data-go='evidence']").click()
             page.locator("#evidence-log").get_by_text("jobs.harborsystems.example", exact=False).wait_for(timeout=12000)
@@ -54,6 +58,7 @@ def run():
             assert "Source collapse detected" in page.locator("#collapse-notice").inner_text()
             assert page.locator(".evidence-svg path").count() >= 3
             assert page.locator(".evidence-svg text").count() >= 8
+            page.wait_for_timeout(800)
             page.screenshot(path=str(ARTIFACTS / "desktop-evidence.png"), full_page=True)
             with page.expect_download() as download_info:
                 page.locator("#download-case").click()
@@ -63,6 +68,7 @@ def run():
             page.locator("#respond").click()
             page.locator("#response-steps li").first.wait_for(timeout=10000)
             assert "password" in page.locator("#response-steps").inner_text().lower()
+            page.wait_for_timeout(800)
             page.screenshot(path=str(ARTIFACTS / "desktop-response.png"), full_page=True)
             assert not errors, errors
             page.locator(".nav button[data-view='overview']").click()
@@ -92,6 +98,12 @@ def run():
             assert overflow <= 2, f"mobile horizontal overflow: {overflow}px"
             mobile.screenshot(path=str(ARTIFACTS / "mobile-overview.png"), full_page=True)
             assert mobile.locator("#run-demo").is_visible()
+            # Reduced-motion preference disables ornamental movement entirely.
+            no_motion = browser.new_page(viewport={"width": 1024, "height": 768},
+                                         reduced_motion="reduce")
+            no_motion.goto(f"http://127.0.0.1:{port}/", wait_until="networkidle", timeout=20000)
+            assert not no_motion.evaluate("document.documentElement.classList.contains('js-motion')")
+            no_motion.close()
             mobile.locator(".nav button[data-view='inspect']").click()
             assert mobile.locator("#view-inspect").is_visible()
             assert mobile.locator("#message").is_visible()
