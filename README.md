@@ -32,6 +32,10 @@ Open the homepage and choose **Run full evidence demo**. OfferProof analyzes a s
 
 See [Judge quickstart](docs/judges-quickstart.md) for the 75-second showcase.
 
+## Offline sender-link discovery (v5)
+
+When the message contains HTTP(S) links, OfferProof extracts up to three distinct **hostnames** without browsing them or making DNS requests. It automatically records these as non-independent, message-derived source leads in the Evidence Lab. Full URLs, paths, credentials and query strings are not copied into the graph or report. Even a familiar hostname is **not evidence of authenticity**; the feature records only what the untrusted sender supplied. Users still report any subsequently discovered evidence and its dependencies.
+
 ## AI-assisted cross-evidence challenge (v3)
 
 The Evidence Lab now includes **Challenge the evidence** after a message inspection and at least one user-reported source. With explicit browser consent, the message and observation texts are sent to Groq for a constrained *cross-evidence comparison*. The model must return **two exact original substrings** (one from the message, one from an observation) and one of a small allowlist of discrepancy types. The server rejects invented quotes, unrecognized categories and model-generated addresses or verdicts, and annotates each hypothesis with the provenance engine's actual source classification. **An AI comparison never authenticates a source or establishes which claim is correct.** When the provider is not configured or fails, the interface clearly states that no semantic comparison occurred. The endpoint shares the in-memory public-demo rate limit with message inspection.
