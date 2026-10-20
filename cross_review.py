@@ -7,7 +7,7 @@ import json
 import os
 from urllib.request import Request, urlopen
 
-from investigation import provenance_graph, safe_provider_failure
+from investigation import provenance_graph, safe_provider_failure, quote_anchor
 from provider import provider_connection, prepare_json_request
 
 KINDS = {
@@ -104,6 +104,8 @@ def review_case(message, notes, extractor=None):
                 seen.add(sig)
                 result["comparisons"].append({
                     "claim_quote":claim,"note_quote":note,"kind":kind,
+                    "message_anchor":quote_anchor(message, claim),
+                    "note_anchor":quote_anchor(graph["nodes"][i]["observation"], note),
                     "question":KINDS[kind],
                     "note_index":i,
                     "note_classification":graph["nodes"][i]["classification"],
