@@ -9,7 +9,7 @@ from collections import defaultdict, deque
 from threading import Lock
 from time import monotonic
 from urllib.request import Request, urlopen
-from investigation import is_explicit_denial, bounded_model_signals, provenance_graph, quoted_questions, safe_provider_failure
+from investigation import is_explicit_denial, bounded_model_signals, provenance_graph, quoted_questions, safe_provider_failure, quote_anchor
 from cross_review import review_case
 from provider import configured_provider, provider_connection, prepare_json_request
 from discovery import message_source_seeds
@@ -109,7 +109,8 @@ def analyze(message, extractor=None):
                 category = item.get("category")
                 if (isinstance(snippet, str) and 2 <= len(snippet) <= 200 and snippet in message
                         and category in {"employer", "role", "payment", "contact", "other"}):
-                    claims.append({"snippet": snippet, "category": category})
+                    claims.append({"snippet": snippet, "category": category,
+                                   "source_anchor": quote_anchor(message, snippet)})
             ai_attention = bounded_model_signals(message, extracted.get("signals", []))
             mode = "ai_extract"  # AI findings remain tentative, never authentication.
     except Exception as error:

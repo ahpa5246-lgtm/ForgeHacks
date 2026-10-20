@@ -3,6 +3,7 @@
 Never interpret either user reports or model suggestions as sender authentication.
 """
 import re
+from hashlib import sha256
 
 KINDS = frozenset({"company_careers", "company_contact", "other"})
 ORIGINS = frozenset({"independent", "message", "ai"})
@@ -41,6 +42,25 @@ def is_explicit_denial(text, start):
     return bool(_DENIAL.search(pre))
 
 
+def quote_anchor(source, quote):
+    """Locate every exact occurrence; offsets are Python/Unicode code points.
+
+    A content hash identifies the supplied text revision, not its authenticity.
+    """
+    if (not isinstance(source, str) or not isinstance(quote, str)
+            or not quote or len(source) > 12000 or len(quote) > 200):
+        raise ValueError("Invalid source quote")
+    occurrences = []
+    start = source.find(quote)
+    while start != -1:
+        occurrences.append({"start": start, "end": start + len(quote)})
+        start = source.find(quote, start + 1)
+    if not occurrences:
+        raise ValueError("Quote is absent from supplied source")
+    return {"source_sha256": sha256(source.encode("utf-8")).hexdigest(),
+            "offset_unit": "unicode_codepoints", "occurrences": occurrences}
+
+
 def quoted_questions(claims):
     """Model quotes are only *questions to verify*, never supporting evidence."""
     found = []
@@ -51,6 +71,8 @@ def quoted_questions(claims):
                 "question": QUESTION_LIBRARY[claim["category"]],
                 "category": claim["category"],
             }
+            if "source_anchor" in claim:
+                entry["source_anchor"] = claim["source_anchor"]
             if entry not in found:
                 found.append(entry)
     return found
