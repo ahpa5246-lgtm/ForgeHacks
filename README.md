@@ -1,5 +1,33 @@
 # OfferProof
 
+## Download, setup and project overview
+
+OfferProof: an evidence-led workspace for investigating recruiting messages.
+
+Claim extraction; source observations; risk flags; cross-review; optional AI providers.
+
+![Project workflow illustration](docs/project-overview.svg)
+
+[Download source ZIP](https://github.com/ahpa5246-lgtm/ForgeHacks/archive/refs/heads/main.zip) · [Changes and branches](https://github.com/ahpa5246-lgtm/ForgeHacks/branches) · [Verification notes](docs/QUALITY_REVIEW.md)
+
+The ZIP contains source code. Installation steps and external runtime requirements are listed below.
+
+```bash
+git clone https://github.com/ahpa5246-lgtm/ForgeHacks.git
+cd ForgeHacks
+```
+
+From the repository directory:
+
+```text
+python -m venv .venv
+# Activate .venv before installing packages.
+# Follow the task-specific CLI / notebook instructions below.
+```
+
+The diagram is a project illustration. Test results and runtime limitations are recorded in [the review](docs/QUALITY_REVIEW.md); it is not a production-readiness certification.
+
+
 **A claim-and-evidence integrity investigation workspace for ForgeHacks 2026 (AI + Cybersecurity).**
 
 Students can paste a suspicious recruiting message. The app quotes claims from the message, marks common high-risk requests, records where a user's observations came from, and provides response steps if the student already shared a password, money, or documents. Every result stays **unverified**: a job listing does not authenticate a recruiter. Nothing in the message is fetched or visited.
